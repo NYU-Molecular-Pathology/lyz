@@ -11,18 +11,11 @@ This script will ...
 import sys
 import os
 import csv
-# from settings import *
 import settings # bash & python settings
 import python_functions as pf
+import get_settings
 
 # ~~~~ CUSTOM FUNCTIONS ~~~~~~ #
-
-def load_settings():
-    '''
-    Load the default sequencer settings file
-    '''
-    sequencing_settings = pf.load_json(settings.sequencer_settings_file)
-    return(sequencing_settings)
 
 def validate_samplesheet(item):
     '''
@@ -60,15 +53,22 @@ def check_for_samplesheets(sequencing_settings):
     print(samplesheet_list)
     print(pf.timestamp())
 
-
+def main():
+    '''
+    Main control function for the program
+    '''
+    sequencing_settings = get_settings.load_settings()
+    check_for_samplesheets(sequencing_settings)
+    get_settings.print_settings()
+    # pf.print_json(sequencing_settings)
 
 def run():
     '''
-    Main function to run the monitoring program
+    Run the monitoring program
+    arg parsing goes here, if program was run as a script
     '''
-    sequencing_settings = load_settings()
-    check_for_samplesheets(sequencing_settings)
-    # pf.print_json(sequencing_settings)
+    main()
+
 
 
 if __name__ == "__main__":
