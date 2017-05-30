@@ -14,9 +14,9 @@ import csv
 import settings # bash & python settings
 import python_functions as pf
 import get_settings
+import logging
 
 # ~~~~ CUSTOM FUNCTIONS ~~~~~~ #
-
 def validate_samplesheet(item):
     '''
     Validate whether an item is a Sample Sheet
@@ -72,4 +72,8 @@ def run():
 
 
 if __name__ == "__main__":
+    log_file = get_settings.get('logfile')
+    print(log_file)
+    logging.basicConfig(filename=log_file, format='%(levelname)s:%(asctime)s:%(message)s', level=logging.DEBUG)
+    logging.debug("log file is {0}".format(log_file))
     run()
