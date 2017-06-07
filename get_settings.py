@@ -6,29 +6,31 @@ This script will be used to get settings from the sequencer_settings.json file
 
 This will help to isolate the contents of the settings file from the code that uses the settings
 '''
+
 import os
 import settings
 import python_functions as pf
 
-def load_settings():
+class Settings(object):
     '''
-    Load the default sequencer settings JSON file
+    Container class object for settings
     '''
-    sequencing_settings = pf.load_json(settings.sequencer_settings_file)
-    return(sequencing_settings)
+    def __init__(self):
+        self.source = pf.load_json(settings.sequencer_settings_file)
+        self.logfile = os.path.join(self.source['auto_demultiplex_log_dir'], 'run_monitor.{0}.log'.format(pf.timestamp()))
+        self.devices = self.source['devices']
+    def pprint(self):
+        '''
+        Pretty printing for the setings
+        '''
+        pf.print_json(self.source)
+    def device_list(self):
+        '''
+        Generator to return the devices in the settings
+        '''
+        # print(self.devices)
+        for key, value in self.devices.items():
+            yield(key, value)
+        #     print(key, value)
 
-def print_settings():
-    '''
-    Print the settings JSON
-    '''
-    pf.print_json(load_settings())
-
-def get(keyword):
-    '''
-    main function for getting settings from the JSON file
-    '''
-    sequencing_settings = load_settings()
-    settings_index = {}
-    settings_index['logfile'] = os.path.join(sequencing_settings['auto_demultiplex_log_dir'], 'run_monitor.{0}.log'.format(pf.timestamp()))
-    if keyword in settings_index.keys():
-        return(settings_index[keyword])
+sequencing_settings = Settings()
