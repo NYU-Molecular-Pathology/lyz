@@ -64,23 +64,12 @@ def check_NGS580(device_name, device_values):
     analysis_output_dir = device_values['analysis_output_dir']
     auto_demultiplex_dir = device_values['auto_demultiplex_dir']
     script = device_values['script']
-
     NGS580.main()
-
-    # logging.debug(device_name)
-    # logging.debug(analysis_output_dir)
-    # logging.debug(auto_demultiplex_dir)
-    # logging.debug(script)
-    # logging.debug(get_samplesheet_list(auto_demultiplex_dir))
 
 def check_IT50(device_name, device_values):
     '''
     Check the IonTorrent for IT50 runs
     '''
-    import IT50
-    # logging.debug("\t".join([key, value]))
-    # logging.debug(key)
-    logging.debug("Now trying the IonTorrent module....")
     import IT50
     IT50.main()
 
@@ -114,46 +103,12 @@ def logpath():
     print(log_file)
     return(logging.FileHandler(log_file))
 
-def log_setup():
-    '''
-    Setup the logging for the program
-    '''
-    # logfile_dir = get_settings.sequencing_settings.logfile_dir
-    #
-    # # set a timestamped log file for debug log
-    # scriptname = os.path.basename(__file__)
-    # script_timestamp = pf.timestamp()
-    # debug_log_file = os.path.join(logfile_dir, '{0}.{1}.log'.format(scriptname, script_timestamp))
-    # log_format='%(asctime)s:%(name)s:%(module)s:%(funcName)s:%(lineno)d:%(levelname)s:%(message)s'
-    # level=logging.DEBUG
-    # print(debug_log_file)
-    # logging.basicConfig(filename=debug_log_file, format='%(name)s:%(module)s:%(funcName)s:%(lineno)d:%(levelname)s:%(asctime)s:%(message)s', level=logging.DEBUG)
-    #
-    # debug_log = logging.getLogger(scriptname)
-    # formatter = logging.Formatter(log_format)
-    # fileHandler = logging.FileHandler(debug_log_file, mode='w')
-    # fileHandler.setFormatter(formatter)
-    # streamHandler = logging.StreamHandler()
-    # streamHandler.setFormatter(formatter)
-    #
-    # debug_log.setLevel(level)
-    # debug_log.addHandler(fileHandler)
-    # debug_log.addHandler(streamHandler)
-    #
-    # # set up a second INFO log
-    # # info_log =
-    #
-    # logging.debug("log file is {0}".format(debug_log_file))
-    # logging.debug(pf.json_dumps(get_settings.sequencing_settings.source))
-
 
 def main():
     '''
     Main control function for the program
     '''
-    # log_setup()
-    # pf.my_debugger(globals().copy())
-
+    # ~~~~~ LOGGING SETUP ~~~~~ #
     # The file's path
     path = os.path.dirname(os.path.realpath(__file__))
 
