@@ -14,6 +14,7 @@ import yaml
 import settings # bash & python settings
 import python_functions as pf
 import get_settings
+
 import logging
 import logging.config
 
@@ -64,11 +65,13 @@ def check_NGS580(device_name, device_values):
     auto_demultiplex_dir = device_values['auto_demultiplex_dir']
     script = device_values['script']
 
-    logging.debug(device_name)
-    logging.debug(analysis_output_dir)
-    logging.debug(auto_demultiplex_dir)
-    logging.debug(script)
-    logging.debug(get_samplesheet_list(auto_demultiplex_dir))
+    NGS580.main()
+
+    # logging.debug(device_name)
+    # logging.debug(analysis_output_dir)
+    # logging.debug(auto_demultiplex_dir)
+    # logging.debug(script)
+    # logging.debug(get_samplesheet_list(auto_demultiplex_dir))
 
 def check_IT50(device_name, device_values):
     '''
@@ -108,6 +111,7 @@ def logpath():
     scriptname = os.path.basename(__file__)
     script_timestamp = pf.timestamp()
     log_file = os.path.join(logfile_dir, '{0}.{1}.log'.format(scriptname, script_timestamp))
+    print(log_file)
     return(logging.FileHandler(log_file))
 
 def log_setup():

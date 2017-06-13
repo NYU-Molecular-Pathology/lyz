@@ -2,18 +2,44 @@ version: 1
 formatters:
   default:
     format: '%(asctime)s:%(name)s:%(module)s:%(funcName)s:%(lineno)d:%(levelname)s:%(message)s'
+
 handlers:
   console:
     class: logging.StreamHandler
     level: DEBUG
     formatter: default
     stream: ext://sys.stdout
-  file:
+  main:
     () : __main__.logpath
     level: DEBUG   
     formatter: default
+  IT50:
+    () : IT50.logpath
+    level: DEBUG
+    formatter: default
+  IT50.emaillog:
+    () : IT50.email_logpath
+    level: INFO
+    formatter: default
+  NGS580:
+    () : NGS580.logpath
+    level: DEBUG
+    formatter: default
+  NGS580.emaillog:
+    () : NGS580.email_logpath
+    level: INFO
+    formatter: default
+
 loggers:
   run_monitor:
     level: DEBUG
-    handlers: [console, file]
-    propagate: no
+    handlers: [console, main]
+    propagate: true
+  run_monitor.IT50:
+    level: DEBUG
+    handlers: [console, main, IT50, IT50.emaillog]
+    propagate: true
+  run_monitor.NGS580:
+    level: DEBUG
+    handlers: [console, main, NGS580, NGS580.emaillog]
+    propagate: true
