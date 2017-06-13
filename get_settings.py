@@ -17,7 +17,8 @@ class Settings(object):
     '''
     def __init__(self):
         self.source = pf.load_json(settings.sequencer_settings_file)
-        self.logfile = os.path.join(self.source['auto_demultiplex_log_dir'], 'run_monitor.{0}.log'.format(pf.timestamp()))
+        self.logfile_dir = self.source['run_monitor_log_dir']
+        self.logfile = os.path.join(self.source['run_monitor_log_dir'], 'run_monitor.{0}.log'.format(pf.timestamp()))
         self.devices = self.source['devices']
     def pprint(self):
         '''

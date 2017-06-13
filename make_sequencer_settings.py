@@ -46,6 +46,9 @@ def make_settings():
     sequencing_settings['devices']['IonTorrent']['sequencing_types'] = {}
     sequencing_settings['devices']['IonTorrent']['sequencing_types']['IT50'] = {}
 
+    # misc settings
+    sequencing_settings['run_monitor_log_dir'] = "/ifs/data/molecpathlab/scripts/run-monitor/logs"
+
     # misc settings, for backwards compatibility
     sequencing_settings['nextseq_dir'] = "/ifs/data/molecpathlab/quicksilver"
     sequencing_settings['bin_dir'] = "/ifs/data/molecpathlab/bin"
