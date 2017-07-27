@@ -5,11 +5,12 @@
 This script sets up settings for use in other python scripts
 '''
 
+
 import sys
 import os
 import settings
 import python_functions as pf
-
+import utils as u
 
 # ~~~~ CUSTOM FUNCTIONS ~~~~~~ #
 def make_settings():
@@ -57,7 +58,7 @@ def make_settings():
     sequencing_settings['email_recipients_file'] = "/ifs/data/molecpathlab/scripts/email_recipients.txt"
 
     # pf.print_json(sequencing_settings)
-    pf.write_json(object = sequencing_settings, output_file = pf.backup_file(input_file = settings.sequencer_settings_file, return_path=True))
+    u.write_json(object = sequencing_settings, output_file = u.backup_file(input_file = settings.sequencer_settings_file, return_path=True))
 
 if __name__ == "__main__":
     make_settings()

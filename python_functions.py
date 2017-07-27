@@ -1,5 +1,15 @@
 #!/usr/bin/env python
-# tested with python 2.7
+# -*- coding: utf-8 -*-
+
+'''
+General utility functions for the program
+
+tested with python 2.7
+'''
+import logging
+logger = logging.getLogger("utils")
+
+logger.debug("loading utils..")
 
 def my_debugger(vars):
     '''
