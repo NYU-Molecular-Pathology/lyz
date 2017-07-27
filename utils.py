@@ -59,7 +59,7 @@ def write_dicts_to_csv(dict_list, output_file):
         fp.writeheader()
         fp.writerows(dict_list)
 
-def backup_file(input_file, return_path=False):
+def backup_file(input_file, return_path=False, sys_print = False):
     '''
     backup a file by moving it to a folder called 'old' and appending a timestamp
     '''
@@ -70,6 +70,12 @@ def backup_file(input_file, return_path=False):
         new_filename = os.path.join(os.path.dirname(new_filename), "old", os.path.basename(new_filename))
         mkdirs(os.path.dirname(new_filename))
         print('Backing up old file:\n{0}\n\nTo location:\n{1}\n'.format(input_file, new_filename))
+        if sys_print == True:
+            print('''
+To undo this, run the following command:\n
+mv {0} {1}
+'''.format(os.path.abspath(input_file), new_filename)
+            )
         os.rename(input_file, new_filename)
     if return_path:
         return input_file

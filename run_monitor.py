@@ -13,6 +13,7 @@ import csv
 import yaml
 import settings # bash & python settings
 import python_functions as pf
+import utils as u
 import get_settings
 
 import logging
@@ -54,7 +55,7 @@ def check_for_samplesheets(auto_demultiplex_dir):
     in_progress_dir = "/ifs/data/molecpathlab/test_data/in-progress"
     samplesheet_list = get_samplesheet_list(auto_demultiplex_dir)
     logging.debug(samplesheet_list)
-    logging.debug(pf.timestamp())
+    logging.debug(u.timestamp())
 
 def check_NGS580(device_name, device_values):
     '''
@@ -98,7 +99,7 @@ def logpath():
     logfile_dir = get_settings.sequencing_settings.logfile_dir
     # set a timestamped log file for debug log
     scriptname = os.path.basename(__file__)
-    script_timestamp = pf.timestamp()
+    script_timestamp = u.timestamp()
     log_file = os.path.join(logfile_dir, '{0}.{1}.log'.format(scriptname, script_timestamp))
     print(log_file)
     return(logging.FileHandler(log_file))
