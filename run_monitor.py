@@ -74,7 +74,7 @@ def check_for_samplesheets(auto_demultiplex_dir):
     '''
     Check the auto_demultiplex_dir dirs defined in the settings
     '''
-    # for sequencing_type, values in sequencing_settings['sequencing_types'].items():
+    # for sequencing_type, values in sequencing_settings['analysis_types'].items():
         # print(sequencing_type, values)
     test_dir = "/ifs/data/molecpathlab/test_data/NGS580"
     processed_dir = "/ifs/data/molecpathlab/test_data/processed"
@@ -105,14 +105,14 @@ def process_device(device_name, device_values):
     Parse the device name and settings and run appropriate actions
     '''
     if device_name == 'NextSeq':
-        for key, value in device_values['sequencing_types'].items():
+        for key, value in device_values['analysis_types'].items():
             # logging.debug("\t".join(key, value))
             logging.debug(key)
             if key == 'NGS580':
-                check_NGS580(device_name, device_values['sequencing_types'][key])
+                check_NGS580(device_name, device_values['analysis_types'][key])
 
     if device_name == "IonTorrent":
-        for key, value in device_values['sequencing_types'].items():
+        for key, value in device_values['analysis_types'].items():
             if key == 'IT50':
                 check_IT50(device_name, device_values)
     # for key, value in device_values.items():
