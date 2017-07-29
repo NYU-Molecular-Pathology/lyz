@@ -8,7 +8,6 @@ tested with python 2.7
 '''
 import logging
 logger = logging.getLogger("utils")
-
 logger.debug("loading utils..")
 
 def my_debugger(vars):

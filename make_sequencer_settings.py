@@ -29,16 +29,16 @@ def make_settings():
     sequencing_settings['devices']['NextSeq']['analysis_types'] = {}
 
     # NGS580 settings
-    sequencing_settings['devices']['NextSeq']['analysis_types']['NGS580'] = {}
-    sequencing_settings['devices']['NextSeq']['analysis_types']['NGS580']['auto_demultiplex_dir'] = '/ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/NGS580'
-    sequencing_settings['devices']['NextSeq']['analysis_types']['NGS580']['script'] = '/ifs/data/molecpathlab/scripts/demultiplexing/demultiplex-NGS580-WES.sh'
-    sequencing_settings['devices']['NextSeq']['analysis_types']['NGS580']['analysis_output_dir'] = '/ifs/data/molecpathlab/NGS580_WES'
+    sequencing_settings['devices']['NextSeq']['analysis_types']['NGS580_demultiplexing'] = {}
+    sequencing_settings['devices']['NextSeq']['analysis_types']['NGS580_demultiplexing']['auto_demultiplex_dir'] = '/ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/NGS580'
+    sequencing_settings['devices']['NextSeq']['analysis_types']['NGS580_demultiplexing']['script'] = '/ifs/data/molecpathlab/scripts/demultiplexing/demultiplex-NGS580-WES.sh'
+    sequencing_settings['devices']['NextSeq']['analysis_types']['NGS580_demultiplexing']['analysis_output_dir'] = '/ifs/data/molecpathlab/NGS580_WES'
 
     # Archer settings
-    sequencing_settings['devices']['NextSeq']['analysis_types']['Archer'] = {}
-    sequencing_settings['devices']['NextSeq']['analysis_types']['Archer']['auto_demultiplex_dir'] = '/ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/Archer'
-    sequencing_settings['devices']['NextSeq']['analysis_types']['Archer']['script'] = '/ifs/data/molecpathlab/scripts/demultiplexing/demultiplex-archer.sh'
-    sequencing_settings['devices']['NextSeq']['analysis_types']['Archer']['analysis_output_dir'] = '/ifs/data/molecpathlab/Archer'
+    sequencing_settings['devices']['NextSeq']['analysis_types']['Archer_demultiplexing'] = {}
+    sequencing_settings['devices']['NextSeq']['analysis_types']['Archer_demultiplexing']['auto_demultiplex_dir'] = '/ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/Archer'
+    sequencing_settings['devices']['NextSeq']['analysis_types']['Archer_demultiplexing']['script'] = '/ifs/data/molecpathlab/scripts/demultiplexing/demultiplex-archer.sh'
+    sequencing_settings['devices']['NextSeq']['analysis_types']['Archer_demultiplexing']['analysis_output_dir'] = '/ifs/data/molecpathlab/Archer'
 
     # IonTorrent settings
     sequencing_settings['devices']['IonTorrent'] = {}

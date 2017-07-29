@@ -6,6 +6,7 @@ Module for processing the IonTorrent IT50 data
 '''
 import logging
 logger = logging.getLogger("run_monitor.IT50")
+logger.debug("loading IT50..")
 
 
 import sys

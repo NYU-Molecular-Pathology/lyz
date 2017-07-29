@@ -16,6 +16,7 @@ import yaml
 
 
 # ~~~~ LOGGING SETUP ~~~~~~ #
+import logging
 import log
 # path to the current script's dir
 scriptdir = os.path.dirname(os.path.realpath(__file__))
@@ -32,8 +33,14 @@ def logpath():
     log_file = os.path.join(scriptdir, 'logs', '{0}.{1}.log'.format(scriptname, script_timestamp))
     return(log.logpath(logfile = log_file))
 
-config_yaml = os.path.join(scriptdir,'logging.yml')
-logger = log.log_setup(config_yaml = config_yaml, logger_name = "run_monitor")
+config_yaml = os.path.join(scriptdir, 'logging.yml')
+loggingConf = open(config_yaml, 'r')
+logging.config.dictConfig(yaml.load(loggingConf))
+loggingConf.close()
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+
 logger.debug("Run monitor is starting...")
 
 
@@ -41,6 +48,13 @@ logger.debug("Run monitor is starting...")
 import settings # bash & python settings
 import utils as u
 import get_settings
+import NGS580
+import NGS580_demultiplexing
+import NGS580_WES
+import IT50
+
+
+logger.debug("All libraries loaded...")
 
 sys.exit()
 
@@ -87,7 +101,6 @@ def check_NGS580(device_name, device_values):
     '''
     Check the status of NGS580 runs in the NextSeq dir
     '''
-    import NGS580
     analysis_output_dir = device_values['analysis_output_dir']
     auto_demultiplex_dir = device_values['auto_demultiplex_dir']
     script = device_values['script']
@@ -97,7 +110,6 @@ def check_IT50(device_name, device_values):
     '''
     Check the IonTorrent for IT50 runs
     '''
-    import IT50
     IT50.main()
 
 def process_device(device_name, device_values):
