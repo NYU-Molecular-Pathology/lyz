@@ -119,7 +119,6 @@ def process_device(device_name, device_values):
     #     print(key, value)
 
 
-
 def main():
     '''
     Main control function for the program
