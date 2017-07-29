@@ -124,20 +124,6 @@ def main():
     '''
     Main control function for the program
     '''
-    # ~~~~~ LOGGING SETUP ~~~~~ #
-    # The file's path
-    path = os.path.dirname(os.path.realpath(__file__))
-
-    # Config file relative to this file
-    loggingConf = open('{0}/logging.yml'.format(path), 'r')
-    logging.config.dictConfig(yaml.load(loggingConf))
-    loggingConf.close()
-
-    logger = logging.getLogger('run_monitor')
-    logger.debug('Hello, world!')
-
-
-    # ~~~~~ PROCESS DEVICS ~~~~~ #
     for device_name, device_values in get_settings.sequencing_settings.device_list():
         process_device(device_name, device_values)
 
