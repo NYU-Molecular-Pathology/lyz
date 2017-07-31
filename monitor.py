@@ -11,18 +11,27 @@ import log # the app's logging submodule
 
 # path to the script's dir
 scriptdir = os.path.dirname(os.path.realpath(__file__))
+script_timestamp = log.timestamp()
 
-def logpath():
+def logpath(scriptname = os.path.basename(__file__)):
     '''
     Return the path to the main log file; needed by the logging.yml
     use this for dynamic output log file paths & names
     '''
     global scriptdir
+    global script_timestamp
     # set a timestamped log file for debug log
-    scriptname = os.path.basename(__file__)
-    script_timestamp = log.timestamp()
     log_file = os.path.join(scriptdir, 'logs', '{0}.{1}.log'.format(scriptname, script_timestamp))
     return(log.logpath(logfile = log_file))
+
+# >>>>> add logpaths for other modules HERE <<<<<
+def NGS580_demultiplexing_email_logpath():
+    '''
+    Path for the logs to be sent as the body of the email for NGS580 Demultiplexing
+    '''
+    global scriptdir
+    global script_timestamp
+    return(logpath(scriptname = 'NGS580_demultiplexing'))
 
 config_yaml = os.path.join(scriptdir, 'logging.yml')
 logger = log.log_setup(config_yaml = config_yaml, logger_name = "monitor")
@@ -33,6 +42,8 @@ logger.debug("Path to the monitor's log file: {0}".format(log.logger_filepath(lo
 
 # ~~~~ PROGRAM LIBRARIES ~~~~~~ #
 import config
+import tools as t
+import NGS580_demultiplexing
 
 
 # ~~~~ FUNCTIONS ~~~~~~ #
@@ -41,6 +52,7 @@ def main():
     Main control function for the program
     '''
     logger.debug("Running the monitor")
+    NGS580_demultiplexing.main()
 
 def run():
     '''
