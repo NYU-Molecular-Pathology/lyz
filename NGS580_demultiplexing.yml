@@ -1,0 +1,3 @@
+analysis_output_dir: /ifs/data/molecpathlab/NGS580_WES
+auto_demultiplex_dir: /ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/NGS580
+script: /ifs/data/molecpathlab/scripts/demultiplexing/demultiplex-NGS580-WES.sh

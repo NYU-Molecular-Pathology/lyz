@@ -5,6 +5,9 @@ formatters:
   console:
     format: '[%(asctime)s] (%(name)s:%(funcName)s:%(lineno)d:%(levelname)s) %(message)s'
     datefmt: "%Y-%m-%d %H:%M:%S"
+  email:
+    format: '[%(levelname)-8s] %(message)s'
+    datefmt: "%Y-%m-%d %H:%M:%S"
 
 handlers:
   console:
@@ -16,43 +19,14 @@ handlers:
     () : __main__.logpath
     level: DEBUG   
     formatter: default
-  IT50:
-    () : IT50.logpath
-    level: DEBUG
-    formatter: default
-  IT50.emaillog:
-    () : IT50.email_logpath
-    level: INFO
-    formatter: default
-  NGS580:
-    () : NGS580.logpath
-    level: DEBUG
-    formatter: default
-  NGS580.emaillog:
-    () : NGS580.email_logpath
-    level: INFO
-    formatter: default
-
 
 loggers:
-  run_monitor:
+  monitor:
     level: DEBUG
     handlers: [console, main]
     propagate: true
-  utils:
+  config:
     level: DEBUG
     handlers: [console, main]
-    propagate: true
-  run_monitor.IT50:
-    level: DEBUG
-    handlers: [console, main, IT50, IT50.emaillog]
-    propagate: true
-  run_monitor.NGS580:
-    level: DEBUG
-    handlers: [console, main, NGS580, NGS580.emaillog]
     propagate: true
 
-root:
-    level: DEBUG
-    handlers: [console, main]
-    propagate: true
