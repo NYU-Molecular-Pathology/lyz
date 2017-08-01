@@ -10,58 +10,23 @@ import logging
 logger = logging.getLogger("find")
 logger.debug("loading find module")
 
-
-def walklevel(some_dir, level=1):
-    '''
-    Recursively search a directory for all items up to a given depth
-    use it like this:
-    file_list = []
-    for item in pf.walklevel(some_dir):
-        if ( item.endswith('my_file.txt') and os.path.isfile(item) ):
-            file_list.append(item)
-    '''
-    import os
-    some_dir = some_dir.rstrip(os.path.sep)
-    assert os.path.isdir(some_dir)
-    num_sep = some_dir.count(os.path.sep)
-    for root, dirs, files in os.walk(some_dir):
-        # yield root, dirs, files
-        for dir in dirs:
-            yield os.path.join(root, dir)
-        for file in files:
-            yield os.path.join(root, file)
-        num_sep_this = root.count(os.path.sep)
-        if num_sep + level <= num_sep_this:
-            del dirs[:]
-
-def find(search_dir, pattern, search_type = 'all', pattern_type = 'mid', num_limit = None, level_limit = None):
+def find(search_dir, pattern, search_type = 'all', num_limit = None, level_limit = None):
     '''
     Function to search for
-    pattern_type must be one of 'start', 'mid', or 'end'
     num_limit is the number of matches to return; use None for no limit
     level_limit is the number of directory levels to recurse
     '''
     import sys
     import itertools
-    if pattern_type == 'mid':
-        find_pattern = '*{0}*'.format(pattern)
-    elif pattern_type == 'start':
-        find_pattern = '{0}*'.format(pattern)
-    elif pattern_type == 'end':
-        find_pattern = '*{0}'.format(pattern)
-    else:
-        logger.error("Pattern type '{0}' not valid, exiting script".format(pattern_type))
-        sys.exit()
-    logger.debug("Searching dir {0} for file pattern {1}; num limit is {2}".format(search_dir, find_pattern, num_limit))
     if num_limit != None:
         matches = []
-        for item in find_gen(search_dir = search_dir, pattern = find_pattern, search_type = search_type, level_limit = level_limit):
+        for item in find_gen(search_dir = search_dir, pattern = pattern, search_type = search_type, level_limit = level_limit):
             if len(matches) <= int(num_limit):
                 matches.append(item)
         logger.debug("Matches found: {0}".format(matches))
         return(matches)
     else:
-        matches = [item for item in find_gen(search_dir = search_dir, pattern = find_pattern, search_type = search_type, level_limit = level_limit)]
+        matches = [item for item in find_gen(search_dir = search_dir, pattern = pattern, search_type = search_type, level_limit = level_limit)]
         logger.debug("Matches found: {0}".format(matches))
         return(matches)
 
@@ -113,3 +78,26 @@ def find_files(search_dir, search_filename):
                 file_list.append(found_file)
     print('Found {0} matches'.format(len(file_list)))
     return(file_list)
+
+def walklevel(some_dir, level=1):
+    '''
+    Recursively search a directory for all items up to a given depth
+    use it like this:
+    file_list = []
+    for item in pf.walklevel(some_dir):
+        if ( item.endswith('my_file.txt') and os.path.isfile(item) ):
+            file_list.append(item)
+    '''
+    import os
+    some_dir = some_dir.rstrip(os.path.sep)
+    assert os.path.isdir(some_dir)
+    num_sep = some_dir.count(os.path.sep)
+    for root, dirs, files in os.walk(some_dir):
+        # yield root, dirs, files
+        for dir in dirs:
+            yield os.path.join(root, dir)
+        for file in files:
+            yield os.path.join(root, file)
+        num_sep_this = root.count(os.path.sep)
+        if num_sep + level <= num_sep_this:
+            del dirs[:]

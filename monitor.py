@@ -55,11 +55,12 @@ def main():
     Main control function for the program
     '''
     logger.debug("Running the monitor")
+    find.find(search_dir = '.', pattern = '*.py', num_limit = 3)
+    find.find(search_dir = '.', pattern = '*.py')
+    find.find(search_dir = '.', pattern = 't*', level_limit = 1)
+    find.find(search_dir = '.', pattern = 't*', search_type = 'file', level_limit = 2)
+
     NGS580_demultiplexing.main()
-    find.find(search_dir = '.', pattern = '.py', pattern_type = 'end', num_limit = 3)
-    find.find(search_dir = '.', pattern = '.py', pattern_type = 'end')
-    find.find(search_dir = '.', pattern = 't', pattern_type = 'start', level_limit = 1)
-    find.find(search_dir = '.', pattern = 't', pattern_type = 'start', search_type = 'file', level_limit = 2)
 
 
 def run():
