@@ -1,5 +1,7 @@
-# run-monitor
-Run monitoring script for lab sequencers
+# lyz
+Monitoring program for lab sequencers.
+
+<img width="250" alt="lizard" src="https://user-images.githubusercontent.com/10505524/28809899-5ba03606-7654-11e7-9047-b18d8924c783.png">
 
 - __NOTE: Under Construction!!__
 
