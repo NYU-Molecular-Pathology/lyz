@@ -41,3 +41,15 @@ loggers:
     level: DEBUG
     handlers: [console, main]
     propagate: true
+  find:
+    level: DEBUG
+    handlers: [console, main]
+    propagate: true
+  git:
+    level: DEBUG
+    handlers: [console, main]
+    propagate: true
+  qsub:
+    level: DEBUG
+    handlers: [console, main]
+    propagate: true

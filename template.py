@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-# tested under Python 2.7
-
 '''
 Template Python script
 '''
@@ -8,7 +6,6 @@ Template Python script
 # ~~~~ LOAD PACKAGES ~~~~~~ #
 import os
 import sys
-import settings
 
 
 # ~~~~ CUSTOM CLASSES ~~~~~~ #

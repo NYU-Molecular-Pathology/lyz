@@ -43,6 +43,9 @@ logger.debug("Path to the monitor's log file: {0}".format(log.logger_filepath(lo
 # ~~~~ PROGRAM LIBRARIES ~~~~~~ #
 import config
 import tools as t
+import find
+import qsub
+import git
 import NGS580_demultiplexing
 
 
@@ -53,6 +56,11 @@ def main():
     '''
     logger.debug("Running the monitor")
     NGS580_demultiplexing.main()
+    find.find(search_dir = '.', pattern = '.py', pattern_type = 'end', num_limit = 3)
+    find.find(search_dir = '.', pattern = '.py', pattern_type = 'end')
+    find.find(search_dir = '.', pattern = 't', pattern_type = 'start', level_limit = 1)
+    find.find(search_dir = '.', pattern = 't', pattern_type = 'start', search_type = 'file', level_limit = 2)
+
 
 def run():
     '''
