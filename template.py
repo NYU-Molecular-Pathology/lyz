@@ -2,6 +2,10 @@
 '''
 Template Python script
 '''
+# ~~~~ LOGGING ~~~~~~ #
+import logging
+logger = logging.getLogger("template")
+logger.debug("loading template module")
 
 # ~~~~ LOAD PACKAGES ~~~~~~ #
 import os
