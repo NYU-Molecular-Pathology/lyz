@@ -37,6 +37,17 @@ def my_debugger(vars):
     shell = code.InteractiveConsole(vars)
     shell.interact()
 
+def subprocess_cmd(command, return_stdout = False):
+    # run a terminal command with stdout piping enabled
+    import subprocess as sp
+    process = sp.Popen(command,stdout=sp.PIPE, shell=True, universal_newlines=True)
+     # universal_newlines=True required for Python 2 3 compatibility with stdout parsing
+    proc_stdout = process.communicate()[0].strip()
+    if return_stdout == True:
+        return(proc_stdout)
+    elif return_stdout == False:
+        logger.debug(proc_stdout)
+
 def timestamp():
     '''
     Return a timestamp string
