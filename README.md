@@ -9,6 +9,8 @@ Monitoring program for lab sequencers.
 
 Designed for use with [NYU-Molecular-Pathology/protocols](https://github.com/NYU-Molecular-Pathology/protocols), this program is used to check on the status of the various DNA sequencers used by the lab. New data or sequencing runs found will be processed automatically, using the methods defined in the program. 
 
+`lyz` is also designed for modularity, extensibility, and flexibility. The program's core usage is in its `monitor.py` script, which will run submodules and tasks set by the end user. 
+
 # Installation
 
 ```bash
