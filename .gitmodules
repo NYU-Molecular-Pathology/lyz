@@ -1,6 +1,6 @@
-[submodule "sh"]
-	path = sh
+[submodule "lyz/sh"]
+	path = lyz/sh
 	url = https://github.com/amoffat/sh.git
-[submodule "toolbox"]
-	path = toolbox
-	url = https://github.com/stevekm/toolbox.git
+[submodule "lyz/toolbox"]
+	path = lyz/toolbox
+	url = git@github.com:stevekm/toolbox.git

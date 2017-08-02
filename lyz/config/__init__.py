@@ -12,15 +12,18 @@ logger.debug("loading config module")
 
 # ~~~~~ SETUP ~~~~~~ #
 import yaml
+import os
+
+scriptdir = os.path.dirname(os.path.realpath(__file__))
 
 logger.debug("loading configurations...")
-with open("misc.yml", "r") as f:
+with open(os.path.join(scriptdir, "misc.yml"), "r") as f:
     misc = yaml.load(f)
 
-with open("NextSeq.yml", "r") as f:
+with open(os.path.join(scriptdir, "NextSeq.yml"), "r") as f:
     NextSeq = yaml.load(f)
 
-with open("NGS580_demultiplexing.yml", "r") as f:
+with open(os.path.join(scriptdir, "NGS580_demultiplexing.yml"), "r") as f:
     NGS580_demultiplexing = yaml.load(f)
 
 
