@@ -25,3 +25,6 @@ lyz/monitor.py
 
 # Software
 Designed and tested with Python 2.7
+
+# Credits
+`lyz` uses [`sh.py`](https://github.com/amoffat/sh) as a dependency.
