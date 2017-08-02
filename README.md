@@ -5,6 +5,21 @@ Monitoring program for lab sequencers.
 
 - __NOTE: Under Construction!!__
 
-- Setup as a submodule and subdirectory of [NYU-Molecular-Pathology/protocols](https://github.com/NYU-Molecular-Pathology/protocols), and references files from there.
+`lyz` is a BYOC automation program framework; Bring Your Own Code. 
 
-This module will check on the status of the various DNA sequencers used by the lab, and will run automatic processing scripts on new data. 
+Designed for use with [NYU-Molecular-Pathology/protocols](https://github.com/NYU-Molecular-Pathology/protocols), this program is used to check on the status of the various DNA sequencers used by the lab. New data or sequencing runs found will be processed automatically, using the methods defined in the program. 
+
+# Installation
+
+```bash
+git clone --recursive https://github.com/stevekm/lyz.git
+```
+
+# Usage
+
+```bash
+lyz/monitor.py
+```
+
+# Software
+Designed and tested with Python 2.7
