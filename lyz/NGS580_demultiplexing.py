@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 '''
 Module for NGS580 NextSeq Demultiplexing
+
+This script will:
+- check for sample sheet files matching naming criteria in a common directory
+- check if found sample sheets match run's available in the NextSeq output directory
+- check if matching runs are 'valid' and ready to be demultiplexed
 '''
 # ~~~~~ LOGGING ~~~~~~ #
 import log
@@ -27,7 +32,7 @@ email_log_file = log.logger_filepath(logger = logger, handler_name = "NGS580_dem
 logger.debug("Path to the NGS580_demultiplexing's log file: {0}".format(email_log_file))
 
 # location to look for Sample sheets
-auto_demultiplex_dir = config.NGS580_demultiplexing['auto_demultiplex_dir']
+samplesheet_source_dir = config.NGS580_demultiplexing['samplesheet_source_dir']
 
 # location of sequencer data output
 sequencer_dir = config.NextSeq['location']
@@ -36,31 +41,52 @@ sequencer_dir = config.NextSeq['location']
 demultiplex_580_script = config.NGS580_demultiplexing['script']
 
 # ~~~~ CUSTOM CLASSES ~~~~~~ #
-class Run(object):
+class NextSeqRun(object):
     '''
-    Container for sequencer run metadata
+    Container for metadata that represents a NextSeq sequencing run
+
+    A run is 'valid' and ready for demultiplexing if:
+    - run directory exists
+    - Basecalls subdirectory exists
+    - RunCompletionStatus.xml, RunInfo.xml, RTAComplete.txt files exist
+    - RTAComplete.txt file contains a timestamp; need to wait at least 90 minutes after timestamp before processing to
+    make sure that all files have been copied over from local machine to storage location for the run
     '''
     def __init__(self, id):
         global sequencer_dir
         global demultiplex_580_script
+        # the NextSeq run ID assigned by the sequencer; the name of the run's parent output directory
         self.id = id
+
+        # path to the run's data output directory
         self.run_dir = os.path.join(sequencer_dir, self.id)
+
+        # 'BaseCalls' directory that holds .bcl files for the run
         self.basecalls_dir = os.path.join(self.run_dir, "Data", "Intensities", "BaseCalls")
+
+        # 'Unaligned' dir which holds the demultiplexed .fastq files for the run
         self.unaligned_dir = os.path.join(self.basecalls_dir, "Unaligned")
+
+        # location for the run's samplesheet for demultiplexing
         self.samplesheet_output_file = os.path.join(self.basecalls_dir, "SampleSheet.csv")
+
+        # shell command to run to start the demultiplexing script
         self.command = '{0} {1}'.format(demultiplex_580_script, self.id)
 
+        # metadata file with more info about the run
+        self.RunInfo_file = os.path.join(self.run_dir, "RunInfo.xml")
+
+        # files produced when the basecalling for the run is finished
         self.RTAComplete_file = os.path.join(self.run_dir, "RTAComplete.txt")
         self.RTAComplete_time = None
 
         self.RunCompletionStatus_file = os.path.join(self.run_dir, "RunCompletionStatus.xml")
-        self.RunInfo_file = os.path.join(self.run_dir, "RunInfo.xml")
 
-        self.valid = False
+        self.is_valid = False
 
     def get_RTAComplete_time(self):
         '''
-        Get the time for the RTAComplete file
+        Get the time listed in the contents of the RTAComplete file
         ex:
         RTA 2.4.11 completed on 5/20/2017 9:47:13 PM
         '''
@@ -69,20 +95,47 @@ class Run(object):
             for line in f:
                 RTA_string = line.strip()
                 break
-        logger.debug(RTA_string)
+        logger.debug('RTAComplete_file contents:\n{0}'.format(str(RTA_string)))
         RTA_time = RTA_string.split("on ")[-1]
         RTA_time = datetime.strptime(RTA_time, '%m/%d/%Y %I:%M:%S %p')
-        logger.debug(RTA_time)
         self.RTAComplete_time = RTA_time
+
+
+    def valiate_RTA_completion_time(self):
+        '''
+        Make sure that at least 90 minutes have passed since the RTAcomplete file's stated timestamp
+        90min = 5400 seconds
+        '''
+        from datetime import datetime
+        logger.debug('Validating Basecalling completetion time')
+        is_valid = False
+        # get the current time
+        now = datetime.now()
+        logger.debug('Current time: {0}'.format(str(now)))
+        # get the time from the RTAComplete file
+        self.get_RTAComplete_time()
+        logger.debug('RTAComplete_time: {0}'.format(self.RTAComplete_time))
+        # check the time difference
+        complete_time = self.RTAComplete_time
+        td = now - complete_time
+        logger.debug('Time difference: {0}'.format(td))
+        logger.debug('Time difference seconds: {0}'.format(td.seconds))
+        if td.seconds > 5400:
+            is_valid = True
+
+
 
     def validate(self):
         '''
         Check to make sure the run is valid and can be demultiplexed
         add more criteria
         '''
+        logger.debug("Validating run: {0}".format(self.id))
         is_valid = True
-        self.get_RTAComplete_time()
-        self.valid = is_valid
+        # check basecalling completion time; at least 90 minutes must have passed
+        self.valiate_RTA_completion_time()
+
+        self.is_valid = is_valid
         return(is_valid)
 
     def run(self):
@@ -100,24 +153,33 @@ def get_runID(samplesheet_file):
 
 def find_samplesheets():
     '''
-    Search for valid samplesheets, representing potential runs to demultiplex
+    Search for valid samplesheets, representing potential runs to check for demultiplexing
+    ex:
+    /ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/NGS580/170519_NB501073_0010_AHCLLMBGX2-SampleSheet.csv
     '''
-    global auto_demultiplex_dir
+    global samplesheet_source_dir
     file_pattern = "*-SampleSheet.csv"
-    samplesheet_files = [item for item in find.find(search_dir = auto_demultiplex_dir, pattern = file_pattern, search_type = 'file', level_limit = 1)]
+    samplesheet_files = [item for item in find.find(search_dir = samplesheet_source_dir, pattern = file_pattern, search_type = 'file', level_limit = 1)]
     logger.debug("Samplesheets found: {0}".format(samplesheet_files))
     return(samplesheet_files)
 
 def make_runs(samplesheets):
     '''
-    Create Run objects from a list of samplesheet files
+    Create NextSeqRun objects from a list of samplesheet files
     '''
     runs = []
     for samplesheet in samplesheets:
         runID = get_runID(samplesheet_file = samplesheet)
         logger.debug("runID is: {0}".format(runID))
-        runs.append(Run(id = runID))
+        runs.append(NextSeqRun(id = runID))
     return(runs)
+
+def validate_runs(runs):
+    '''
+    Run the validation method on each run
+    '''
+    for run in runs:
+        run.validate()
 
 
 def main():
@@ -130,6 +192,7 @@ def main():
     logger.debug("samplesheets found: {0}".format(samplesheets))
     runs = make_runs(samplesheets = samplesheets)
     logger.debug("Runs found: {0}".format([run.id for run in runs]))
+    validate_runs(runs = runs)
 
 
 def run():
