@@ -3,8 +3,6 @@
 
 '''
 General utility functions and classes for the program
-
-tested with python 2.7
 '''
 import logging
 logger = logging.getLogger("tools")
@@ -60,7 +58,7 @@ def print_dict(mydict):
     pretty printing for dict entries
     '''
     for key, value in mydict.items():
-        print('{}: {}\n\n'.format(key, value))
+        logger.debug('{}: {}\n\n'.format(key, value))
 
 def mkdirs(path, return_path=False):
     '''
@@ -99,9 +97,9 @@ def backup_file(input_file, return_path=False, sys_print = False):
         new_filename = '{0}.{1}{2}'.format(filename, timestamp(), extension)
         new_filename = os.path.join(os.path.dirname(new_filename), "old", os.path.basename(new_filename))
         mkdirs(os.path.dirname(new_filename))
-        print('Backing up old file:\n{0}\n\nTo location:\n{1}\n'.format(input_file, new_filename))
+        logger.debug('\nBacking up old file:\n{0}\n\nTo location:\n{1}\n'.format(input_file, new_filename))
         if sys_print == True:
-            print('''
+            logger.debug('''
 To undo this, run the following command:\n
 mv {0} {1}
 '''.format(os.path.abspath(input_file), new_filename)
@@ -112,7 +110,7 @@ mv {0} {1}
 
 def print_json(object):
     import json
-    print(json.dumps(object, sort_keys=True, indent=4))
+    logger.debug(json.dumps(object, sort_keys=True, indent=4))
 
 def json_dumps(object):
     import json
