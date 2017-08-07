@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Functions to set up the program logger
+Functions & items to set up the program loggers
 '''
 
 import yaml
@@ -9,6 +9,8 @@ import logging
 import logging.config
 import os
 
+
+# ~~~~~ FUNCTIONS ~~~~~ #
 def timestamp():
     '''
     Return a timestamp string
@@ -25,7 +27,7 @@ def logpath(logfile = 'log.txt'):
 
 def log_setup(config_yaml, logger_name):
     '''
-    Set up the logger for the script
+    Set up the logger for the script using a YAML config file
     config = path to YAML config file
     '''
     # Config file relative to this file
@@ -45,3 +47,66 @@ def logger_filepath(logger, handler_name):
             if handler_name == logname:
                 log_file = h.baseFilename
     return(log_file)
+
+def get_logger_handler(logger, handler_name):
+    '''
+    Get the filehander object from a logger
+    '''
+    for h in logger.__dict__['handlers']:
+        if h.__class__.__name__ == 'FileHandler':
+            logname = h.get_name()
+            if handler_name == logname:
+                return(h)
+
+
+def build_logger(name, level = logging.DEBUG, log_format = '[%(asctime)s] (%(name)s:%(funcName)s:%(lineno)d:%(levelname)s) %(message)s'):
+    '''
+    Create a basic logger instance
+    Only add console handler by default
+    '''
+    # create logger instance
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+
+    # create console handler
+    consolelog = logging.StreamHandler()
+    consolelog.setLevel(level)
+    consolelog.set_name("console")
+
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter(log_format)
+    formatter.datefmt = "%Y-%m-%d %H:%M:%S"
+    consolelog.setFormatter(formatter)
+
+    # add the handlers to logger
+    logger.addHandler(consolelog)
+    # logger.addHandler(create_main_filehandler())
+    return(logger)
+
+def create_main_filehandler(log_file, name = "main", level = logging.DEBUG, log_format = '%(asctime)s:%(name)s:%(module)s:%(funcName)s:%(lineno)d:%(levelname)s:%(message)s'):
+    '''
+    Return the 'main' file handler using globally set variables
+    '''
+    # global scriptdir
+    # global scriptname
+    # global logdir
+    # file_timestamp = timestamp()
+    # log_file = os.path.join(scriptdir, logdir, '{0}.{1}.log'.format(scriptname, file_timestamp))
+    formatter = logging.Formatter(log_format)
+    formatter.datefmt = "%Y-%m-%d %H:%M:%S"
+    mainhandler = logging.FileHandler(log_file)
+    mainhandler.setLevel(level)
+    mainhandler.set_name(name)
+    mainhandler.setFormatter(formatter)
+    return(mainhandler)
+
+
+
+# ~~~~~ GLOBALS ~~~~~ #
+# can also be reset by other modules
+# script_timestamp = timestamp()
+# scriptdir = os.path.dirname(os.path.realpath(__file__))
+# scriptname = os.path.basename(__file__)
+# logdir = os.path.join(scriptdir, 'logs')
+#
+# main_filehandler = create_main_filehandler()
