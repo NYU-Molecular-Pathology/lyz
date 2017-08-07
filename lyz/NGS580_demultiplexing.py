@@ -12,9 +12,15 @@ import log
 import logging
 import os
 
-# logger = logging.getLogger("NGS580_demultiplexing")
 # get console logger
 logger = log.build_logger(name = "NGS580_demultiplexing")
+# add a filehander
+scriptdir = os.path.dirname(os.path.realpath(__file__))
+scriptname = os.path.basename(__file__)
+logdir = os.path.join(scriptdir, 'logs')
+file_timestamp = log.timestamp()
+log_file = os.path.join(scriptdir, logdir, '{0}.{1}.log'.format(scriptname, file_timestamp))
+logger.addHandler(log.create_main_filehandler(log_file = log_file, name = "NGS580_demultiplexing"))
 logger.debug("loading NGS580_demultiplexing module")
 
 
@@ -66,12 +72,13 @@ class NextSeqRun(object):
         self.logger = log.build_logger(name = self.id)
 
         # self.logger = logging.getLogger(self.id).setLevel(logging.DEBUG)
-        self.logger.debug("\n\nStarted logging for {0}".format(self.id))
+        self.logger.debug("\n\nStarted logging for {0}\n\n".format(self.id))
 
         self.logger.info("extra_filehandlers: {0}".format(extra_filehandlers))
         if extra_filehandlers != None:
             for h in extra_filehandlers:
-                self.logger.addHandler(h)
+                if h != None:
+                    self.logger.addHandler(h)
 
         self.logger.info("here are the current handlers:")
         for h in self.logger.__dict__['handlers']:
@@ -195,7 +202,10 @@ def make_runs(samplesheets):
     for samplesheet in samplesheets:
         runID = get_runID(samplesheet_file = samplesheet)
         logger.debug("runID is: {0}".format(runID))
-        runs.append(NextSeqRun(id = runID, extra_filehandlers = [log.get_logger_handler(logger = logger, handler_name = "main")]))
+        runs.append(NextSeqRun(id = runID, extra_filehandlers = [
+        log.get_logger_handler(logger = logger, handler_name = h.get_name()) for h in logger.__dict__['handlers'] if h.__class__.__name__ == 'FileHandler'
+        ]
+        ))
         #
     return(runs)
 
