@@ -48,15 +48,31 @@ def logger_filepath(logger, handler_name):
                 log_file = h.baseFilename
     return(log_file)
 
-def get_logger_handler(logger, handler_name):
+def get_logger_handler(logger, handler_name, handler_type = 'FileHandler'):
     '''
     Get the filehander object from a logger
     '''
     for h in logger.__dict__['handlers']:
-        if h.__class__.__name__ == 'FileHandler':
+        if h.__class__.__name__ == handler_type:
             logname = h.get_name()
             if handler_name == logname:
                 return(h)
+
+def add_handlers(logger, handlers):
+    '''
+    Add filehandlers to the logger
+    '''
+    # handlers = None
+    if handlers == None:
+        return(logger)
+    # handlers is assumed to be a single handler if its not a list
+    if not isinstance(handlers, list):
+        logger.addHandler(handlers)
+    # otherwise its assumed to be a list of handlers
+    else:
+        for h in handlers:
+            logger.addHandler(h)
+    return(logger)
 
 
 def build_logger(name, level = logging.DEBUG, log_format = '[%(asctime)s] (%(name)s:%(funcName)s:%(lineno)d:%(levelname)s) %(message)s'):
