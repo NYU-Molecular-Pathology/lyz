@@ -37,7 +37,7 @@ import tools as t
 import find
 import qsub
 import git
-
+from classes import LoggedObject
 
 
 # ~~~~ GLOBALS ~~~~~~ #
@@ -55,7 +55,7 @@ demultiplex_580_script = config.NGS580_demultiplexing['script']
 
 
 # ~~~~ CUSTOM CLASSES ~~~~~~ #
-class NextSeqRun(object):
+class NextSeqRun(LoggedObject):
     '''
     Container for metadata that represents a NextSeq sequencing run
 
@@ -67,24 +67,39 @@ class NextSeqRun(object):
     make sure that all files have been copied over from local machine to storage location for the run
     '''
     def __init__(self, id, extra_handlers = None):
+        LoggedObject.__init__(self, id = id, extra_handlers = extra_handlers)
         global sequencer_dir
         global demultiplex_580_script
         # the NextSeq run ID assigned by the sequencer; the name of the run's parent output directory
         self.id = str(id)
+        # ~~~~ LOGGING ~~~~~~ #
+        # per-run logging setup & configuration
         self.logger = log.build_logger(name = self.id)
-
         # self.logger = logging.getLogger(self.id).setLevel(logging.DEBUG)
-        self.logger.debug("\n\nStarted logging for {0}\n\n".format(self.id))
+        self.logger.info("Found NextSeq NGS580 run: {0}".format(self.id))
+        # 
+        # # add extra handlers if passed
+        # if extra_handlers != None:
+        #     self.logger.debug("extra_handlers: {0}".format(extra_handlers))
+        #     for h in extra_handlers:
+        #         if h != None:
+        #             self.logger.addHandler(h)
+        #
+        # # set a run-specific Info log file for email
+        #
+        # # log the paths to all filehandlers
+        # self.handlers = [x for x in log.get_all_handlers(logger = self.logger, types = ['FileHandler'])]
+        # self.handler_paths = {}
+        # # for name in logger_filepath(logger = self.logger, handler_name = name)
+        # for h in self.handlers:
+        # # for h in self.logger.__dict__['handlers']:
+        #     name = h.get_name()
+        #     self.handler_paths[name] = log.logger_filepath(logger = self.logger, handler_name = name)
+        # for name, path in self.handler_paths.items():
+        #     self.logger.info('Path to {0} log file: {1}'.format(name, path))
 
-        self.logger.info("extra_handlers: {0}".format(extra_handlers))
-        if extra_handlers != None:
-            for h in extra_handlers:
-                if h != None:
-                    self.logger.addHandler(h)
+        self.log_handler_paths(logger = self.logger, types = ['FileHandler'])
 
-        self.logger.info("here are the current handlers:")
-        for h in self.logger.__dict__['handlers']:
-            self.logger.info(h.get_name())
 
 
         # path to the run's data output directory
@@ -205,11 +220,7 @@ def make_runs(samplesheets):
     for samplesheet in samplesheets:
         runID = get_runID(samplesheet_file = samplesheet)
         logger.debug("runID is: {0}".format(runID))
-        runs.append(NextSeqRun(id = runID, extra_handlers = [x for x in log.get_all_handlers(logger = logger)]
-        # extra_handlers = [
-        # log.get_logger_handler(logger = logger, handler_name = h.get_name()) for h in logger.__dict__['handlers'] if h.__class__.__name__ == 'FileHandler'
-        # ]
-        ))
+        runs.append(NextSeqRun(id = runID, extra_handlers = [x for x in log.get_all_handlers(logger = logger)]))
     return(runs)
 
 def validate_runs(runs):
@@ -226,12 +237,12 @@ def main(extra_handlers = None):
     '''
     # check for extra logger handlers that might have been passed
     if extra_handlers != None:
-        logger.info("extra_handlers: {0}".format(extra_handlers))
+        logger.debug("extra_handlers: {0}".format(extra_handlers))
         for h in extra_handlers:
             logger.addHandler(h)
-    logger.info("here are the current handlers:")
+    logger.debug("here are the current handlers:")
     for h in logger.__dict__['handlers']:
-        logger.info(h.get_name())
+        logger.debug(h.get_name())
     logger.info("Current time: {0}".format(t.timestamp()))
     logger.info("Log file path: {0}".format(log.logger_filepath(logger = logger, handler_name = "NGS580_demultiplexing.email")))
     samplesheets = find_samplesheets()
