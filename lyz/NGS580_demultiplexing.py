@@ -20,7 +20,11 @@ scriptname = os.path.basename(__file__)
 logdir = os.path.join(scriptdir, 'logs')
 file_timestamp = log.timestamp()
 log_file = os.path.join(scriptdir, logdir, '{0}.{1}.log'.format(scriptname, file_timestamp))
+# add a per-module timestamped logging file handler
 logger.addHandler(log.create_main_filehandler(log_file = log_file, name = "NGS580_demultiplexing"))
+# make the file handler global for use elsewhere
+main_filehandler = log.get_logger_handler(logger = logger, handler_name = 'NGS580_demultiplexing')
+
 logger.debug("loading NGS580_demultiplexing module")
 
 
@@ -34,11 +38,9 @@ import find
 import qsub
 import git
 
-# ~~~~ GLOBALS ~~~~~~ #
-# path to the log file to use for the email output
-# email_log_file = log.logger_filepath(logger = logger, handler_name = "NGS580_demultiplexing.email")
-# logger.debug("Path to the NGS580_demultiplexing's log file: {0}".format(email_log_file))
 
+
+# ~~~~ GLOBALS ~~~~~~ #
 # location to look for Sample sheets
 samplesheet_source_dir = config.NGS580_demultiplexing['samplesheet_source_dir']
 
@@ -64,7 +66,7 @@ class NextSeqRun(object):
     - RTAComplete.txt file contains a timestamp; need to wait at least 90 minutes after timestamp before processing to
     make sure that all files have been copied over from local machine to storage location for the run
     '''
-    def __init__(self, id, extra_filehandlers = None):
+    def __init__(self, id, extra_handlers = None):
         global sequencer_dir
         global demultiplex_580_script
         # the NextSeq run ID assigned by the sequencer; the name of the run's parent output directory
@@ -74,9 +76,9 @@ class NextSeqRun(object):
         # self.logger = logging.getLogger(self.id).setLevel(logging.DEBUG)
         self.logger.debug("\n\nStarted logging for {0}\n\n".format(self.id))
 
-        self.logger.info("extra_filehandlers: {0}".format(extra_filehandlers))
-        if extra_filehandlers != None:
-            for h in extra_filehandlers:
+        self.logger.info("extra_handlers: {0}".format(extra_handlers))
+        if extra_handlers != None:
+            for h in extra_handlers:
                 if h != None:
                     self.logger.addHandler(h)
 
@@ -190,7 +192,7 @@ def find_samplesheets():
     '''
     global samplesheet_source_dir
     file_pattern = "*-SampleSheet.csv"
-    samplesheet_files = [item for item in find.find(search_dir = samplesheet_source_dir, pattern = file_pattern, search_type = 'file', level_limit = 1)]
+    samplesheet_files = [item for item in find.find(search_dir = samplesheet_source_dir, inclusion_patterns = file_pattern, search_type = 'file', level_limit = 1)]
     logger.debug("Samplesheets found: {0}".format(samplesheet_files))
     return(samplesheet_files)
 
@@ -198,15 +200,16 @@ def make_runs(samplesheets):
     '''
     Create NextSeqRun objects from a list of samplesheet files
     '''
+    logger.debug("making runs for samplesheets: {0}".format(samplesheets))
     runs = []
     for samplesheet in samplesheets:
         runID = get_runID(samplesheet_file = samplesheet)
         logger.debug("runID is: {0}".format(runID))
-        runs.append(NextSeqRun(id = runID, extra_filehandlers = [
-        log.get_logger_handler(logger = logger, handler_name = h.get_name()) for h in logger.__dict__['handlers'] if h.__class__.__name__ == 'FileHandler'
-        ]
+        runs.append(NextSeqRun(id = runID, extra_handlers = [x for x in log.get_all_handlers(logger = logger)]
+        # extra_handlers = [
+        # log.get_logger_handler(logger = logger, handler_name = h.get_name()) for h in logger.__dict__['handlers'] if h.__class__.__name__ == 'FileHandler'
+        # ]
         ))
-        #
     return(runs)
 
 def validate_runs(runs):
@@ -217,13 +220,14 @@ def validate_runs(runs):
         run.validate()
 
 
-def main(extra_filehandlers = None):
+def main(extra_handlers = None):
     '''
     Main control function for the program
     '''
-    logger.info("extra_filehandlers: {0}".format(extra_filehandlers))
-    if extra_filehandlers != None:
-        for h in extra_filehandlers:
+    # check for extra logger handlers that might have been passed
+    if extra_handlers != None:
+        logger.info("extra_handlers: {0}".format(extra_handlers))
+        for h in extra_handlers:
             logger.addHandler(h)
     logger.info("here are the current handlers:")
     for h in logger.__dict__['handlers']:

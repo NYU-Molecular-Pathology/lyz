@@ -58,6 +58,17 @@ def get_logger_handler(logger, handler_name, handler_type = 'FileHandler'):
             if handler_name == logname:
                 return(h)
 
+def get_all_handlers(logger, types = ['FileHandler']):
+    '''
+    Get all logger handlers of the given types from the logger
+    types = ['FileHandler', 'StreamHandler']
+    x = [h for h in get_all_handlers(logger)]
+    '''
+    for h in logger.__dict__['handlers']:
+        if h.__class__.__name__ in types:
+            yield(h)
+
+
 def add_handlers(logger, handlers):
     '''
     Add filehandlers to the logger
@@ -115,14 +126,3 @@ def create_main_filehandler(log_file, name = "main", level = logging.DEBUG, log_
     mainhandler.set_name(name)
     mainhandler.setFormatter(formatter)
     return(mainhandler)
-
-
-
-# ~~~~~ GLOBALS ~~~~~ #
-# can also be reset by other modules
-# script_timestamp = timestamp()
-# scriptdir = os.path.dirname(os.path.realpath(__file__))
-# scriptname = os.path.basename(__file__)
-# logdir = os.path.join(scriptdir, 'logs')
-#
-# main_filehandler = create_main_filehandler()
