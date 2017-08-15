@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/NYU-Molecular-Pathology/lyz.svg?branch=master)](https://travis-ci.org/NYU-Molecular-Pathology/lyz)
 # lyz
 Monitoring program for lab sequencers.
 
