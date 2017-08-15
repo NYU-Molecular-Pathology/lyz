@@ -1,0 +1,5 @@
+script: /ifs/data/molecpathlab/scripts/NGS580/start_NGS580_WES_analysis.sh
+sns_dir: /ifs/data/molecpathlab/scripts/sns
+email_recipients: '#MolecularPathology@nyumc.org'
+reply_to_servername: 'nyumc.org'
+wes_targets_bed: /ifs/data/molecpathlab/NGS580_WES/NGS580_targets.bed

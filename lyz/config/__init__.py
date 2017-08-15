@@ -26,7 +26,11 @@ with open(os.path.join(scriptdir, "NextSeq.yml"), "r") as f:
 with open(os.path.join(scriptdir, "NGS580_demultiplexing.yml"), "r") as f:
     NGS580_demultiplexing = yaml.load(f)
 
+with open(os.path.join(scriptdir, 'NGS580_analysis.yml'), "r") as f:
+    NGS580_analysis = yaml.load(f)
+
 
 logger.debug(misc)
 logger.debug(NextSeq)
 logger.debug(NGS580_demultiplexing)
+logger.debug(NGS580_analysis)
