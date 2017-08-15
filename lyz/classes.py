@@ -54,9 +54,9 @@ class LoggedObject(object):
         for name, path in handler_paths.items():
             logger.info('Path to {0} log file: {1}'.format(name, path))
 
-    # def __repr__(self):
-    #     return(self.id)
-    # def __str__(self):
-    #     return(self.id)
-    # def __len__(self):
-    #     return(len(self.id))
+    def __repr__(self):
+        return(self.id)
+    def __str__(self):
+        return(self.id)
+    def __len__(self):
+        return(len(self.id))

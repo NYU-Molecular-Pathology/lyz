@@ -46,10 +46,10 @@ import shutil
 import sys
 import tools as t
 import find
-import qsub
-import git
+# import qsub
+# import git
 from classes import LoggedObject
-import subprocess as sp
+# import subprocess as sp
 import mutt
 import getpass
 
@@ -70,6 +70,7 @@ class NextSeqRun(LoggedObject):
         self.RTAComplete_time = None
         self.is_valid = False
         self._init_paths()
+        self.seqtype = self.get_seqtype(seqtype_file = self.seqtype_file)
 
     def _init_paths(self):
         '''
@@ -87,6 +88,9 @@ class NextSeqRun(LoggedObject):
         # Demultiplex_Stats.htm file with stats about the completed demultiplexing
         self.demultiplex_stats_file = os.path.join(self.unaligned_dir, 'Demultiplex_Stats.htm')
 
+        # file that says what kind of sequencing it is, should be 'NGS580' on the first line
+        self.seqtype_file = os.path.join(self.run_dir, "seqtype.txt")
+
 
         # metadata file with more info about the run
         self.RunInfo_file = os.path.join(self.run_dir, "RunInfo.xml")
@@ -95,6 +99,19 @@ class NextSeqRun(LoggedObject):
         self.RTAComplete_file = os.path.join(self.run_dir, "RTAComplete.txt")
         self.RunCompletionStatus_file = os.path.join(self.run_dir, "RunCompletionStatus.xml")
 
+    def get_seqtype(self, seqtype_file):
+        '''
+        Get the sequencing type from the file
+        only the contents of the first line
+        '''
+        contents = None
+        try:
+            with open(seqtype_file, "rb") as f:
+                contents = f.readlines()[0].strip()
+        except:
+            self.logger.error("Seqtype file could not be read! File:\n{0}\nContents:\n{1}".format(seqtype_file, contents))
+        return(contents)
+
     def get_RTAComplete_time(self):
         '''
         Get the time listed in the contents of the RTAComplete file
@@ -102,13 +119,17 @@ class NextSeqRun(LoggedObject):
         RTA 2.4.11 completed on 5/20/2017 9:47:13 PM
         '''
         from datetime import datetime
-        with open(self.RTAComplete_file) as f:
-            for line in f:
-                RTA_string = line.strip()
-                break
-        self.logger.debug('RTAComplete_file contents:\n{0}'.format(str(RTA_string)))
-        RTA_time = RTA_string.split("on ")[-1]
-        RTA_time = datetime.strptime(RTA_time, '%m/%d/%Y %I:%M:%S %p')
+        RTA_time = None
+        try:
+            with open(self.RTAComplete_file) as f:
+                for line in f:
+                    RTA_string = line.strip()
+                    break
+            self.logger.debug('RTAComplete_file contents:\n{0}'.format(str(RTA_string)))
+            RTA_time = RTA_string.split("on ")[-1]
+            RTA_time = datetime.strptime(RTA_time, '%m/%d/%Y %I:%M:%S %p')
+        except IOError:
+            logger.debug('RTAComplete_file file could not be opened! File: {0}'.format(self.RTAComplete_file))
         return(RTA_time)
 
     def valiate_RTA_completion_time(self):
@@ -128,17 +149,19 @@ class NextSeqRun(LoggedObject):
         self.RTAComplete_time = self.get_RTAComplete_time()
         self.logger.info('RTAComplete_time: {0}'.format(self.RTAComplete_time))
 
-        # check the time difference
-        complete_time = self.RTAComplete_time
-        td = now - complete_time
-        self.logger.info('Time difference: {0}'.format(td))
-        self.logger.debug('Time difference seconds: {0}'.format(td.seconds))
-        if td.seconds > 5400:
-            self.logger.info('More than 90 mintes have passed since run completetion')
-            is_valid = True
+        if self.RTAComplete_time:
+            # check the time difference
+            complete_time = self.RTAComplete_time
+            td = now - complete_time
+            self.logger.info('Time difference: {0}'.format(td))
+            self.logger.debug('Time difference seconds: {0}'.format(td.seconds))
+            if td.seconds > 5400:
+                self.logger.info('More than 90 mintes have passed since run completetion')
+                is_valid = True
+            else:
+                self.logger.warning('Not enough time has passed since run completetion, run will NOT be demultiplexed.')
         else:
-            self.logger.warning('Not enough time has passed since run completetion, run will NOT be demultiplexed.')
-
+            self.logger.error('RTAComplete_time is not valid.')
         self.logger.info('Run time completetion is valid: {0}'.format(is_valid))
         return(is_valid)
 
@@ -167,6 +190,7 @@ class NextSeqRun(LoggedObject):
         self.logger.info("Validating run: {0}".format(self.id))
         is_valid = False
 
+
         # check basecalling completion time; at least 90 minutes must have passed
         RTA_completion_time_validation = self.valiate_RTA_completion_time()
         unaligned_dir_validation = self.item_exists(item = self.unaligned_dir, item_type = 'dir')
@@ -187,6 +211,9 @@ class NextSeqRun(LoggedObject):
         RunCompletionStatus_file_validation = self.item_exists(item = self.RunCompletionStatus_file, item_type = 'file')
         self.logger.debug('RunCompletionStatus file exists: {0}'.format(RunCompletionStatus_file_validation))
 
+        seqtype_validation = self.seqtype == 'NGS580'
+        self.logger.debug('seqtype is "NGS580": {0}'.format(seqtype_validation))
+
 
         validations = [
         RTA_completion_time_validation,
@@ -195,7 +222,8 @@ class NextSeqRun(LoggedObject):
         basecalls_dir_validation,
         RTAComplete_file_validation,
         RunInfo_file_validation,
-        RunCompletionStatus_file_validation
+        RunCompletionStatus_file_validation,
+        seqtype_validation
         ]
 
         is_valid = all(validations)
@@ -211,8 +239,33 @@ class NextSeqRun(LoggedObject):
 # ~~~~ CUSTOM FUNCTIONS ~~~~~~ #
 def find_available_NextSeq_runs(sequencer_dir):
     '''
-
+    Find directories in the sequencer_dir that match
+    sequencer_dir = "/ifs/data/molecpathlab/quicksilver"
+    import find
+    find.find(search_dir = sequencer_dir, search_type = 'dir', level_limit = 0)
     '''
+    excludes = [
+    "to_be_demultiplexed",
+    "automatic_demultiplexing_logs",
+    "ArcherRun",
+    "run_index",
+    "*_test*",
+    "*_run_before_sequencing_done*"
+    ]
+    sequencer_dirs = {}
+    for item in find.find(search_dir = sequencer_dir, exclusion_patterns = excludes, search_type = 'dir', level_limit = 0):
+        item_id = os.path.basename(item)
+        sequencer_dirs[item_id] = item
+    runs = [NextSeqRun(id = name) for name, path in sequencer_dirs.items()]
+
+    NGS580_runs = []
+    for run in runs:
+        if run.validate():
+            NGS580_runs.append(run)
+    logger.debug(NGS580_runs)
+
+
+
 
 def main(extra_handlers = None):
     '''
@@ -228,6 +281,7 @@ def main(extra_handlers = None):
         logger.debug(h.get_name())
     logger.info("Current time: {0}".format(t.timestamp()))
     logger.info("Log file path: {0}".format(log.logger_filepath(logger = logger, handler_name = "NGS580_analysis")))
+    find_available_NextSeq_runs(sequencer_dir = sequencer_dir)
 
 
 
