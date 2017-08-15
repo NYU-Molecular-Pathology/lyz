@@ -10,9 +10,10 @@ sudo apt-get update -qq
 echo "gridengine-master shared/gridenginemaster string localhost" | sudo debconf-set-selections
 echo "gridengine-master shared/gridenginecell string default" | sudo debconf-set-selections
 echo "gridengine-master shared/gridengineconfig boolean true" | sudo debconf-set-selections
-echo "gridengine-client       shared/gridenginemaster string  $HOSTNAME" | sudo debconf-set-selections
-echo "gridengine-client       shared/gridenginecell   string  default" | sudo debconf-set-selections
-echo "gridengine-client       shared/gridengineconfig boolean true" | sudo debconf-set-selections
+# https://peteris.rocks/blog/sun-grid-engine-installation-on-ubuntu-server/
+# echo "gridengine-client       shared/gridenginemaster string  $HOSTNAME" | sudo debconf-set-selections
+# echo "gridengine-client       shared/gridenginecell   string  default" | sudo debconf-set-selections
+# echo "gridengine-client       shared/gridengineconfig boolean true" | sudo debconf-set-selections
 sudo apt-get install gridengine-common gridengine-master
 # Do this in a separate step to give master time to start
 sudo apt-get install libdrmaa1.0 gridengine-client gridengine-exec
@@ -31,5 +32,9 @@ qstat -f -q all.q -explain a
 echo "You should see sge_execd and sge_qmaster running below:"
 ps aux | grep "sge"
 echo "Check if qstat is installed"
-which qstat
-qstat
+{
+    which qstat
+    qstat
+} || {
+    echo "oops qstat is still not installed"
+}
