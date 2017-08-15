@@ -87,19 +87,22 @@ def write_dicts_to_csv(dict_list, output_file):
         fp.writeheader()
         fp.writerows(dict_list)
 
-def backup_file(input_file, return_path=False, sys_print = False):
+def backup_file(input_file, return_path=False, sys_print = False, use_logger = None):
     '''
     backup a file by moving it to a folder called 'old' and appending a timestamp
+    use_logger is a logger object to log to
     '''
     import os
+    if use_logger:
+        logger = use_logger
     if os.path.isfile(input_file):
         filename, extension = os.path.splitext(input_file)
         new_filename = '{0}.{1}{2}'.format(filename, timestamp(), extension)
         new_filename = os.path.join(os.path.dirname(new_filename), "old", os.path.basename(new_filename))
         mkdirs(os.path.dirname(new_filename))
-        logger.debug('\nBacking up old file:\n{0}\n\nTo location:\n{1}\n'.format(input_file, new_filename))
+        logger.info('\nBacking up old file:\n{0}\n\nTo location:\n{1}\n'.format(input_file, new_filename))
         if sys_print == True:
-            logger.debug('''
+            logger.info('''
 To undo this, run the following command:\n
 mv {0} {1}
 '''.format(os.path.abspath(input_file), new_filename)

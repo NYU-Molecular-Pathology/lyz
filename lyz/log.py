@@ -126,3 +126,15 @@ def create_main_filehandler(log_file, name = "main", level = logging.DEBUG, log_
     mainhandler.set_name(name)
     mainhandler.setFormatter(formatter)
     return(mainhandler)
+
+def email_log_filehandler(log_file, name = "emaillog", level = logging.INFO, log_format = '[%(levelname)-8s] %(message)s', datefmt = "%Y-%m-%d %H:%M:%S"):
+    '''
+    Return a fileHandler for a log meant to be used as the body of an email
+    '''
+    formatter = logging.Formatter(log_format)
+    formatter.datefmt = datefmt
+    emailhandler = logging.FileHandler(log_file)
+    emailhandler.setLevel(level)
+    emailhandler.set_name(name)
+    emailhandler.setFormatter(formatter)
+    return(emailhandler)
