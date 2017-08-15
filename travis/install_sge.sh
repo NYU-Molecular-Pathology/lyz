@@ -10,6 +10,9 @@ sudo apt-get update -qq
 echo "gridengine-master shared/gridenginemaster string localhost" | sudo debconf-set-selections
 echo "gridengine-master shared/gridenginecell string default" | sudo debconf-set-selections
 echo "gridengine-master shared/gridengineconfig boolean true" | sudo debconf-set-selections
+echo "gridengine-client       shared/gridenginemaster string  $HOSTNAME" | sudo debconf-set-selections
+echo "gridengine-client       shared/gridenginecell   string  default" | sudo debconf-set-selections
+echo "gridengine-client       shared/gridengineconfig boolean false" | sudo debconf-set-selections
 sudo apt-get install gridengine-common gridengine-master
 # Do this in a separate step to give master time to start
 sudo apt-get install libdrmaa1.0 gridengine-client gridengine-exec
