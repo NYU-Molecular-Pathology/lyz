@@ -17,7 +17,10 @@ import re
 import datetime
 from time import sleep
 import sys
-from sh import qstat
+try:
+    from sh import qstat
+except:
+    logger.error("qstat could not be loaded")
 
 
 # ~~~~ GLOBALS ~~~~~~ #
@@ -52,7 +55,10 @@ class Job(object):
         Retrieve the job's qstat entry
         '''
         import re
-        from sh import qstat
+        try:
+            from sh import qstat
+        except:
+            logger.error("qstat could not be loaded")
         job_id_pattern = r"^\s*{0}\s.*$".format(id)
         if not qstat_stdout:
             qstat_stdout = qstat()
@@ -222,7 +228,10 @@ def get_job_status(job_id, qstat_stdout = None):
     Get the status of a qsub job
     '''
     import re
-    from sh import qstat
+    try:
+        from sh import qstat
+    except:
+        logger.error("qstat could not be loaded")
     # job_id = '2305564'
     # regex for the pattern matching https://docs.python.org/2/library/re.html
     job_id_pattern = r"^.*{0}.*\s([a-zA-Z]+)\s.*$".format(job_id)
