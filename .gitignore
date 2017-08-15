@@ -6,3 +6,4 @@ log-test/
 lyz/logs/*
 to_be_demultiplexed
 misc/
+cron/logs/*
