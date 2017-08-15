@@ -100,9 +100,9 @@ def backup_file(input_file, return_path=False, sys_print = False, use_logger = N
         new_filename = '{0}.{1}{2}'.format(filename, timestamp(), extension)
         new_filename = os.path.join(os.path.dirname(new_filename), "old", os.path.basename(new_filename))
         mkdirs(os.path.dirname(new_filename))
-        logger.info('\nBacking up old file:\n{0}\n\nTo location:\n{1}\n'.format(input_file, new_filename))
+        logger.debug('\nBacking up old file:\n{0}\n\nTo location:\n{1}\n'.format(input_file, new_filename))
         if sys_print == True:
-            logger.info('''
+            logger.debug('''
 To undo this, run the following command:\n
 mv {0} {1}
 '''.format(os.path.abspath(input_file), new_filename)

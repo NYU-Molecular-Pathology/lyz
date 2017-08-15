@@ -21,6 +21,9 @@ demultiplex_580_script = config.NGS580_demultiplexing['script']
 # location to save demultiplexing log files
 logdir = config.NGS580_demultiplexing['logdir']
 
+# location to move processed samplesheets to
+samplesheet_processed_dir = config.NGS580_demultiplexing['samplesheet_processed_dir']
+
 email_recipients = config.NGS580_demultiplexing['email_recipients']
 reply_to_servername = config.NGS580_demultiplexing['reply_to_servername']
 
@@ -77,6 +80,7 @@ class NextSeqRun(LoggedObject):
         global demultiplex_580_script
         global logdir
         global script_timestamp
+        global samplesheet_processed_dir
         global email_recipients
         global reply_to_servername
         # the NextSeq run ID assigned by the sequencer; the name of the run's parent output directory
@@ -93,6 +97,7 @@ class NextSeqRun(LoggedObject):
         # ~~~~ ATTRIBUTES ~~~~~~ #
         self.samplesheet = samplesheet
         self.logger.info("Samplesheet file: {0}".format(samplesheet))
+        self.samplesheet_processed_dir = samplesheet_processed_dir
 
         # path to the run's data output directory
         self.run_dir = os.path.join(sequencer_dir, self.id)
@@ -118,6 +123,8 @@ class NextSeqRun(LoggedObject):
         self.RTAComplete_time = None
 
         self.RunCompletionStatus_file = os.path.join(self.run_dir, "RunCompletionStatus.xml")
+
+
 
         # ~~~~ EMAIL ATTRIBUTES ~~~~~~ #
         self.email_recipients = email_recipients
@@ -266,10 +273,11 @@ class NextSeqRun(LoggedObject):
         #  run the shell command to start the demult script
         process = sp.Popen(command, stdout = sp.PIPE, shell = True, universal_newlines = True)
         proc_stdout = process.communicate()[0]
-        if proc_stdout.returncode < 1:
-            self.logger.debug('Demultiplexing script started successfully:\n\n{}\n\n'.format(proc_stdout.strip()))
+        if process.returncode < 1:
+            self.logger.info('Demultiplexing script started successfully:\n\n{}\n\n'.format(proc_stdout.strip()))
         else:
             self.logger.error('Demultiplexing script may not have started successfully!!\n\n{}\n\n'.format(proc_stdout.strip()))
+        self.move_samplesheet_to_processed(samplesheet = self.samplesheet, processed_dir = self.samplesheet_processed_dir)
         self.email_results()
 
     def email_results(self):
@@ -294,6 +302,22 @@ class NextSeqRun(LoggedObject):
         address = username + '@' + server
         return(address)
 
+    def move_samplesheet_to_processed(self, samplesheet, processed_dir):
+        '''
+        Move the samplesheet to the 'processed' directory
+        '''
+        if os.path.isfile(samplesheet):
+            filename, extension = os.path.splitext(samplesheet)
+            new_filename = '{0}.{1}{2}'.format(filename, script_timestamp, extension)
+            new_filepath = os.path.join(processed_dir, os.path.basename(new_filename))
+            t.mkdirs(os.path.dirname(new_filepath))
+            self.logger.debug('\nMoving old samplesheet:\n{0}\n\nTo location:\n{1}\n'.format(samplesheet, new_filepath))
+            self.logger.debug('''
+To undo this, run the following command:\n
+mv {0} {1}
+'''.format(new_filepath, os.path.abspath(samplesheet)))
+            os.rename(samplesheet, new_filepath)
+
     def start(self):
         '''
         Start the demultiplexing for the run
@@ -301,7 +325,7 @@ class NextSeqRun(LoggedObject):
         self.is_valid = self.validate()
         if self.is_valid:
             self.set_new_samplesheet(input_samplesheet = self.samplesheet, output_samplesheet = self.samplesheet_output_file)
-            # self.submit_demultiplexing()
+            self.submit_demultiplexing()
         else:
             self.logger.error('Run will not be demultiplexed because some validations failed')
 
