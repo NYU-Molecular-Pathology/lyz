@@ -13,11 +13,15 @@ import config
 # location of sequencer data output
 sequencer_dir = config.NextSeq['location']
 
+# location where started/completed/processed runs are output
+analysis_output_dir = config.NGS580_analysis['analysis_output_dir']
+
 # script to use for demultiplexing
 start_NGS580_script = config.NGS580_analysis['script']
 
 email_recipients = config.NGS580_analysis['email_recipients']
 reply_to_servername = config.NGS580_analysis['reply_to_servername']
+
 
 # ~~~~~ LOGGING ~~~~~~ #
 import log
@@ -42,14 +46,11 @@ logger.debug("loading NGS580_analysis module")
 
 
 # ~~~~ LOAD PACKAGES ~~~~~~ #
-import shutil
 import sys
 import tools as t
 import find
-# import qsub
-# import git
 from classes import LoggedObject
-# import subprocess as sp
+from tools import SubprocessCmd
 import mutt
 import getpass
 
@@ -65,12 +66,33 @@ class NextSeqRun(LoggedObject):
     def __init__(self, id, extra_handlers = None):
         LoggedObject.__init__(self, id = id, extra_handlers = extra_handlers)
         global sequencer_dir
+        global start_NGS580_script
+        global email_recipients
+        global reply_to_servername
+        global script_timestamp
+        global logdir
+
         self.id = id
+
+        # ~~~~ LOGGING ~~~~~~ #
+        # set a run-specific Info log file for email
+        self.logfile = os.path.join(logdir, '{0}.{1}.log'.format(self.id, script_timestamp))
+        self.logger = log.add_handlers(logger = self.logger, handlers = [log.email_log_filehandler(log_file = self.logfile) ])
+
+
         self.sequencer_dir = sequencer_dir
+        self.start_NGS580_script = start_NGS580_script
+        self.command = '{0} {1}'.format(self.start_NGS580_script, self.id)
         self.RTAComplete_time = None
         self.is_valid = False
         self._init_paths()
         self.seqtype = self.get_seqtype(seqtype_file = self.seqtype_file)
+
+        # ~~~~ EMAIL ATTRIBUTES ~~~~~~ #
+        self.email_recipients = email_recipients
+        self.email_subject_line = '[NGS580] Started {0}'.format(self.id)
+        self.reply_to_servername = reply_to_servername
+        self.reply_to = self.get_reply_to_address(server = self.reply_to_servername)
 
     def _init_paths(self):
         '''
@@ -230,6 +252,47 @@ class NextSeqRun(LoggedObject):
         self.logger.info('All run validations passed: {0}'.format(is_valid))
         return(is_valid)
 
+    def get_reply_to_address(self, server):
+        '''
+        Get the email address to use for the 'reply to' field in the email
+        '''
+        username = getpass.getuser()
+        address = username + '@' + server
+        return(address)
+
+    def email_results(self):
+        '''
+        Send an email using the object's INFO log as the body of the message
+        '''
+        email_recipients = self.email_recipients
+        email_subject_line = self.email_subject_line
+        reply_to = self.reply_to
+        message_file = log.logger_filepath(logger = self.logger, handler_name = 'emaillog')
+
+        email_command = mutt.mutt_mail(recipient_list = email_recipients, reply_to = reply_to, subject_line = email_subject_line, message = 'This message should have been replaced by the script log file contents. If you are reading it, something broke, sorry', message_file = message_file, return_only_mode = True, quiet = True)
+
+        self.logger.debug('Email command is:\n\n{0}\n\n'.format(email_command))
+        mutt.subprocess_cmd(command = email_command)
+
+
+    def start(self):
+        '''
+        Start the analysis on the run
+        '''
+        self.is_valid = self.validate()
+        if self.is_valid:
+            self.logger.debug('Start command is:\n\n{0}\n\n'.format(self.command))
+            self.logger.debug('Running command')
+            x = SubprocessCmd(command = self.command)
+            x.run()
+            if x.process.returncode < 1:
+                self.logger.info('NGS580 script started successfully:\n\n{0}\n\n'.format(x.proc_stdout))
+            else:
+                self.logger.error('Demultiplexing script may not have started successfully!!\n\n{0}\n\n'.format(x.proc_stdout))
+            self.email_results()
+        else:
+            self.logger.error('Run will not be demultiplexed because some validations failed')
+
 
 
 
@@ -243,6 +306,8 @@ def find_available_NextSeq_runs(sequencer_dir):
     sequencer_dir = "/ifs/data/molecpathlab/quicksilver"
     import find
     find.find(search_dir = sequencer_dir, search_type = 'dir', level_limit = 0)
+
+    return a list of NextSeqRun objects
     '''
     excludes = [
     "to_be_demultiplexed",
@@ -256,13 +321,37 @@ def find_available_NextSeq_runs(sequencer_dir):
     for item in find.find(search_dir = sequencer_dir, exclusion_patterns = excludes, search_type = 'dir', level_limit = 0):
         item_id = os.path.basename(item)
         sequencer_dirs[item_id] = item
-    runs = [NextSeqRun(id = name) for name, path in sequencer_dirs.items()]
+    runs = [NextSeqRun(id = name, extra_handlers = [x for x in log.get_all_handlers(logger = logger)]) for name, path in sequencer_dirs.items()]
 
     NGS580_runs = []
     for run in runs:
         if run.validate():
             NGS580_runs.append(run)
-    logger.debug(NGS580_runs)
+    # logger.debug(NGS580_runs)
+    return(NGS580_runs)
+
+def find_completed_NGS580_runs(analysis_output_dir):
+    '''
+    Find the NGS580 runs that have been done already
+
+    return a dict of NGS580_dirs[item_id] = item
+    '''
+    excludes = [
+    "targets"
+    ]
+    NGS580_dirs = {}
+    for item in find.find(search_dir = analysis_output_dir, exclusion_patterns = excludes, search_type = 'dir', level_limit = 0):
+        item_id = os.path.basename(item)
+        NGS580_dirs[item_id] = item
+    # logger.debug(NGS580_dirs.items())
+    return(NGS580_dirs)
+
+def start_runs(runs):
+    '''
+    Run the start method on each run
+    '''
+    for run in runs:
+        run.start()
 
 
 
@@ -281,7 +370,21 @@ def main(extra_handlers = None):
         logger.debug(h.get_name())
     logger.info("Current time: {0}".format(t.timestamp()))
     logger.info("Log file path: {0}".format(log.logger_filepath(logger = logger, handler_name = "NGS580_analysis")))
-    find_available_NextSeq_runs(sequencer_dir = sequencer_dir)
+
+    logger.debug("Finding runs...")
+    available_NGS580_runs = find_available_NextSeq_runs(sequencer_dir = sequencer_dir)
+    completed_NGS580_dirs = find_completed_NGS580_runs(analysis_output_dir = analysis_output_dir)
+
+    runs_to_start = []
+    for run in available_NGS580_runs:
+        if run.id not in completed_NGS580_dirs.keys():
+            runs_to_start.append(run)
+
+    logger.debug("runs_to_start: {0}".format(runs_to_start))
+    logger.debug("starting runs")
+    start_runs(runs = runs_to_start)
+
+
 
 
 

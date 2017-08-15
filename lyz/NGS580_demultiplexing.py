@@ -274,9 +274,9 @@ class NextSeqRun(LoggedObject):
         process = sp.Popen(command, stdout = sp.PIPE, shell = True, universal_newlines = True)
         proc_stdout = process.communicate()[0]
         if process.returncode < 1:
-            self.logger.info('Demultiplexing script started successfully:\n\n{}\n\n'.format(proc_stdout.strip()))
+            self.logger.info('Demultiplexing script started successfully:\n\n{0}\n\n'.format(proc_stdout.strip()))
         else:
-            self.logger.error('Demultiplexing script may not have started successfully!!\n\n{}\n\n'.format(proc_stdout.strip()))
+            self.logger.error('Demultiplexing script may not have started successfully!!\n\n{0}\n\n'.format(proc_stdout.strip()))
         self.move_samplesheet_to_processed(samplesheet = self.samplesheet, processed_dir = self.samplesheet_processed_dir)
         self.email_results()
 

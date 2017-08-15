@@ -33,7 +33,7 @@ class TestNextSeqRun(unittest.TestCase):
         x.logger = log.remove_handlers(logger = x.logger, handlers = handlers)
         x.sequencer_dir = sequencer_dir
         x._init_paths()
-        self.assertTrue(x.validate(), 'Demo assertion')
+        self.assertTrue(x.validate(), 'Valid run did not pass validations')
 
     def test_invalid_NextSeq_run1(self):
         '''
@@ -46,7 +46,7 @@ class TestNextSeqRun(unittest.TestCase):
         x.logger = log.remove_handlers(logger = x.logger, handlers = handlers)
         x.sequencer_dir = sequencer_dir
         x._init_paths()
-        self.assertFalse(x.validate(), 'Demo assertion')
+        self.assertFalse(x.validate(), 'Invalid run passed validations')
 
 
 if __name__ == '__main__':

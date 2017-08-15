@@ -4,3 +4,4 @@ email_recipients: '#MolecularPathology@nyumc.org'
 reply_to_servername: 'nyumc.org'
 wes_targets_bed: /ifs/data/molecpathlab/NGS580_WES/NGS580_targets.bed
 seqtype: NGS580
+analysis_output_dir: /ifs/data/molecpathlab/NGS580_WES

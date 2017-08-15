@@ -4,6 +4,7 @@
 '''
 General utility functions and classes for the program
 '''
+import subprocess as sp
 import logging
 logger = logging.getLogger("tools")
 logger.debug("loading tools module")
@@ -15,6 +16,25 @@ class Container(object):
     basic container for information
     '''
     pass
+
+class SubprocessCmd(object):
+    '''
+    A command to be run in subprocess
+    '''
+    def __init__(self, command):
+        self.command = command
+
+    def run(self, command = None):
+        '''
+        Run the command, capture the process object
+
+        # universal_newlines=True required for Python 2 3 compatibility with stdout parsing
+        '''
+        if not command:
+            command = self.command
+        self.process = sp.Popen(command, stdout = sp.PIPE, shell = True, universal_newlines = True)
+        self.proc_stdout = self.process.communicate()[0].strip()
+
 
 
 # ~~~~ CUSTOM FUNCTIONS ~~~~~~ #
