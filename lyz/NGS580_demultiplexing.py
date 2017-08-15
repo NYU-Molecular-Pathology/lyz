@@ -21,7 +21,8 @@ demultiplex_580_script = config.NGS580_demultiplexing['script']
 # location to save demultiplexing log files
 logdir = config.NGS580_demultiplexing['logdir']
 
-
+email_recipients = config.NGS580_demultiplexing['email_recipients']
+reply_to_servername = config.NGS580_demultiplexing['reply_to_servername']
 
 # ~~~~~ LOGGING ~~~~~~ #
 import log
@@ -54,8 +55,8 @@ import qsub
 import git
 from classes import LoggedObject
 import subprocess as sp
-
-
+import mutt
+import getpass
 
 
 # ~~~~ CUSTOM CLASSES ~~~~~~ #
@@ -76,6 +77,8 @@ class NextSeqRun(LoggedObject):
         global demultiplex_580_script
         global logdir
         global script_timestamp
+        global email_recipients
+        global reply_to_servername
         # the NextSeq run ID assigned by the sequencer; the name of the run's parent output directory
         self.id = str(id)
         # ~~~~ LOGGING ~~~~~~ #
@@ -115,6 +118,13 @@ class NextSeqRun(LoggedObject):
         self.RTAComplete_time = None
 
         self.RunCompletionStatus_file = os.path.join(self.run_dir, "RunCompletionStatus.xml")
+
+        # ~~~~ EMAIL ATTRIBUTES ~~~~~~ #
+        self.email_recipients = email_recipients
+        self.email_subject_line = '[Demultiplexing] NextSeq Run {0}'.format(self.id)
+        self.reply_to_servername = reply_to_servername
+        self.reply_to = self.get_reply_to_address(server = self.reply_to_servername)
+
 
         self.is_valid = False
 
@@ -199,7 +209,7 @@ class NextSeqRun(LoggedObject):
         Check to make sure the run is valid and can be demultiplexed
         add more criteria
         '''
-        self.logger.debug("Validating run: {0}".format(self.id))
+        self.logger.info("Validating run: {0}".format(self.id))
         is_valid = False
 
         # check basecalling completion time; at least 90 minutes must have passed
@@ -260,7 +270,29 @@ class NextSeqRun(LoggedObject):
             self.logger.debug('Demultiplexing script started successfully:\n\n{}\n\n'.format(proc_stdout.strip()))
         else:
             self.logger.error('Demultiplexing script may not have started successfully!!\n\n{}\n\n'.format(proc_stdout.strip()))
+        self.email_results()
 
+    def email_results(self):
+        '''
+        Send an email using the object's INFO log as the body of the message
+        '''
+        email_recipients = self.email_recipients
+        email_subject_line = self.email_subject_line
+        reply_to = self.reply_to
+        message_file = log.logger_filepath(logger = self.logger, handler_name = 'emaillog')
+
+        email_command = mutt.mutt_mail(recipient_list = email_recipients, reply_to = reply_to, subject_line = email_subject_line, message = 'This message should have been replaced by the script log file contents. If you are reading it, something broke, sorry', message_file = message_file, return_only_mode = True, quiet = True)
+
+        self.logger.debug('Email command is:\n\n{0}\n\n'.format(email_command))
+        mutt.subprocess_cmd(command = email_command)
+
+    def get_reply_to_address(self, server):
+        '''
+        Get the email address to use for the 'reply to' field in the email
+        '''
+        username = getpass.getuser()
+        address = username + '@' + server
+        return(address)
 
     def start(self):
         '''
