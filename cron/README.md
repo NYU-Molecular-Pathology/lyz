@@ -1,4 +1,8 @@
-start cron job
+These files can be used to start an automated `cron` job for `lyz`. You will need to fill them in with the appropriate information for use on your system.
+
+## `cron` Cheatsheet
+
+start cron job from file
 
 ```
 crontab run.job
