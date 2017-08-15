@@ -68,6 +68,13 @@ def get_all_handlers(logger, types = ['FileHandler']):
         if h.__class__.__name__ in types:
             yield(h)
 
+def remove_handlers(logger, handlers):
+    '''
+    Removes all the handlers from a logger
+    '''
+    for h in logger.__dict__['handlers']:
+        logger.removeHandler(h)
+    return(logger)
 
 def add_handlers(logger, handlers):
     '''
