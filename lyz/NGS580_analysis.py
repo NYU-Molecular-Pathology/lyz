@@ -86,7 +86,7 @@ class NextSeqRun(LoggedObject):
         self.RTAComplete_time = None
         self.is_valid = False
         self._init_paths()
-        self.seqtype = self.get_seqtype(seqtype_file = self.seqtype_file)
+
 
         # ~~~~ EMAIL ATTRIBUTES ~~~~~~ #
         self.email_recipients = email_recipients
@@ -120,6 +120,7 @@ class NextSeqRun(LoggedObject):
         # files produced when the basecalling for the run is finished
         self.RTAComplete_file = os.path.join(self.run_dir, "RTAComplete.txt")
         self.RunCompletionStatus_file = os.path.join(self.run_dir, "RunCompletionStatus.xml")
+        self.seqtype = self.get_seqtype(seqtype_file = self.seqtype_file)
 
     def get_seqtype(self, seqtype_file):
         '''
