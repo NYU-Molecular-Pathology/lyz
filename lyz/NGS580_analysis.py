@@ -129,7 +129,7 @@ class NextSeqRun(LoggedObject):
         '''
         contents = None
         try:
-            with open(seqtype_file, "rb") as f:
+            with open(self.seqtype_file, "rb") as f:
                 contents = f.readlines()[0].strip()
         except:
             self.logger.error("Seqtype file could not be read! File:\n{0}\nContents:\n{1}".format(seqtype_file, contents))
