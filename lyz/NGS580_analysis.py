@@ -252,19 +252,20 @@ class NextSeqRun(LoggedObject):
         seqtype_validation = self.seqtype == 'NGS580'
         self.logger.debug('seqtype is "NGS580": {0}'.format(seqtype_validation))
 
+        validations = {}
+        validations['RTA_completion_time_validation'] = RTA_completion_time_validation
+        validations['unaligned_dir_validation'] = unaligned_dir_validation
+        validations['run_dir_validation'] = run_dir_validation
+        validations['basecalls_dir_validation'] = basecalls_dir_validation
+        validations['RTAComplete_file_validation'] = RTAComplete_file_validation
+        validations['RunInfo_file_validation'] = RunInfo_file_validation
+        validations['RunCompletionStatus_file_validation'] = RunCompletionStatus_file_validation
+        validations['seqtype_validation'] = seqtype_validation
 
-        validations = [
-        RTA_completion_time_validation,
-        unaligned_dir_validation,
-        run_dir_validation,
-        basecalls_dir_validation,
-        RTAComplete_file_validation,
-        RunInfo_file_validation,
-        RunCompletionStatus_file_validation,
-        seqtype_validation
-        ]
+        for name, value in validations.items():
+            self.logger.debug('{0}: {1}'.format(name, value))
 
-        is_valid = all(validations)
+        is_valid = all(validations.values())
         self.logger.info('All run validations passed: {0}'.format(is_valid))
         return(is_valid)
 

@@ -6,22 +6,27 @@ unit tests for the find module
 '''
 import unittest
 import os
-from NGS580_analysis import NextSeqRun
+from NGS580_demultiplexing import NextSeqRun
 import log
 
 scriptdir = os.path.dirname(os.path.realpath(__file__))
 fixture_dir = os.path.join(scriptdir, "fixtures")
 sequencer_dir =  os.path.join(fixture_dir, 'NextSeq_runs')
+samplesheet_source_dir = os.path.join(fixture_dir, 'to_be_demultiplexed', 'NGS580')
+samplesheet_processed_dir = os.path.join(fixture_dir, 'to_be_demultiplexed', 'processed')
 
 configs = {}
 configs['sequencer_dir'] = sequencer_dir
-# configs['analysis_output_dir'] = analysis_output_dir
-configs['start_NGS580_script'] = 'foo'
 configs['email_recipients'] = 'bar'
 configs['reply_to_servername'] = 'baz'
 configs['scriptdir'] = scriptdir
 configs['logdir'] = os.path.join(scriptdir, 'logs')
 configs['script_timestamp'] = log.timestamp()
+
+configs['samplesheet_source_dir'] = samplesheet_source_dir
+configs['demultiplex_580_script'] = 'zzzzz'
+configs['samplesheet_processed_dir'] = samplesheet_processed_dir
+configs['seqtype'] = 'NGS580'
 
 
 class TestNextSeqRun(unittest.TestCase):
@@ -36,8 +41,9 @@ class TestNextSeqRun(unittest.TestCase):
         '''
         Test a NextSeq demo run that should be valid
         '''
-        run_id = '170809_NB501073_0019_AH5FFYBGX3'
-        x = NextSeqRun(id = run_id, config = configs)
+        run_id = '170809_NB501073_0019_AH5FFYBGX3_notdemultiplexed'
+        samplesheet = os.path.join(samplesheet_source_dir, '170809_NB501073_0019_AH5FFYBGX3_notdemultiplexed-SampleSheet.csv')
+        x = NextSeqRun(id = run_id, samplesheet = samplesheet, config = configs)
         # remove the handlers because they are too verbose here
         handlers = [h for h in log.get_all_handlers(logger = x.logger, types = ['FileHandler', 'StreamHandler'])]
         x.logger = log.remove_handlers(logger = x.logger, handlers = handlers)
@@ -48,7 +54,8 @@ class TestNextSeqRun(unittest.TestCase):
         Missing RunInfo.xml
         '''
         run_id = '170809_NB501073_0019_AH5FFYBGX3_broke1'
-        x = NextSeqRun(id = run_id, config = configs)
+        samplesheet = os.path.join(samplesheet_source_dir, '170809_NB501073_0019_AH5FFYBGX3_broke1-SampleSheet.csv')
+        x = NextSeqRun(id = run_id, samplesheet = samplesheet, config = configs)
         handlers = [h for h in log.get_all_handlers(logger = x.logger, types = ['FileHandler', 'StreamHandler'])]
         x.logger = log.remove_handlers(logger = x.logger, handlers = handlers)
         self.assertFalse(x.validate(), 'Invalid run passed validations')

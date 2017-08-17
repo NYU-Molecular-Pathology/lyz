@@ -8,26 +8,6 @@ This script will:
 - check if matching runs are 'valid' and ready to be demultiplexed
 '''
 # ~~~~ GLOBALS ~~~~~~ #
-import config
-# location to look for Sample sheets
-samplesheet_source_dir = config.NGS580_demultiplexing['samplesheet_source_dir']
-
-# location of sequencer data output
-sequencer_dir = config.NextSeq['location']
-
-# script to use for demultiplexing
-demultiplex_580_script = config.NGS580_demultiplexing['script']
-
-# location to save demultiplexing log files
-logdir = config.NGS580_demultiplexing['logdir']
-
-# location to move processed samplesheets to
-samplesheet_processed_dir = config.NGS580_demultiplexing['samplesheet_processed_dir']
-
-email_recipients = config.NGS580_demultiplexing['email_recipients']
-reply_to_servername = config.NGS580_demultiplexing['reply_to_servername']
-
-seqtype = config.NGS580_demultiplexing['seqtype']
 
 # ~~~~~ LOGGING ~~~~~~ #
 import log
@@ -37,7 +17,7 @@ import os
 script_timestamp = log.timestamp()
 scriptdir = os.path.dirname(os.path.realpath(__file__))
 scriptname = os.path.basename(__file__)
-# logdir = os.path.join(scriptdir, 'logs')
+logdir = os.path.join(scriptdir, 'logs')
 file_timestamp = log.timestamp()
 log_file = os.path.join(scriptdir, logdir, '{0}.{1}.log'.format(scriptname, file_timestamp))
 
@@ -46,22 +26,51 @@ logger = log.build_logger(name = "NGS580_demultiplexing")
 logger.addHandler(log.create_main_filehandler(log_file = log_file, name = "NGS580_demultiplexing"))
 # make the file handler global for use elsewhere
 main_filehandler = log.get_logger_handler(logger = logger, handler_name = 'NGS580_demultiplexing')
-
 logger.debug("loading NGS580_demultiplexing module")
 
 
 
-# ~~~~ LOAD PACKAGES ~~~~~~ #
+# ~~~~ GET EXTERNAL CONFIGS ~~~~~~ #
+import config
+samplesheet_source_dir = config.NGS580_demultiplexing['samplesheet_source_dir']
+sequencer_dir = config.NextSeq['location']
+demultiplex_580_script = config.NGS580_demultiplexing['script']
+# logdir = config.NGS580_demultiplexing['logdir']
+samplesheet_processed_dir = config.NGS580_demultiplexing['samplesheet_processed_dir']
+email_recipients = config.NGS580_demultiplexing['email_recipients']
+reply_to_servername = config.NGS580_demultiplexing['reply_to_servername']
+seqtype = config.NGS580_demultiplexing['seqtype']
+
+
+
+# ~~~~ CREATE INTERNAL CONFIGS ~~~~~~ #
+# bundle configs into a dict
+configs = {}
+configs['sequencer_dir'] = sequencer_dir
+configs['samplesheet_source_dir'] = samplesheet_source_dir
+configs['demultiplex_580_script'] = demultiplex_580_script
+configs['samplesheet_processed_dir'] = samplesheet_processed_dir
+configs['seqtype'] = seqtype
+configs['email_recipients'] = email_recipients
+configs['reply_to_servername'] = reply_to_servername
+configs['scriptdir'] = scriptdir
+configs['logdir'] = logdir
+configs['log_file'] = log_file
+configs['main_filehandler'] = main_filehandler
+configs['script_timestamp'] = script_timestamp
+
+
+
+# ~~~~ LOAD MORE PACKAGES ~~~~~~ #
 import shutil
 import sys
 import tools as t
 import find
-import qsub
-import git
 from classes import LoggedObject
 import subprocess as sp
 import mutt
 import getpass
+
 
 
 # ~~~~ CUSTOM CLASSES ~~~~~~ #
@@ -76,42 +85,47 @@ class NextSeqRun(LoggedObject):
     - RTAComplete.txt file contains a timestamp; need to wait at least 90 minutes after timestamp before processing to
     make sure that all files have been copied over from local machine to storage location for the run
     '''
-    def __init__(self, id, samplesheet, extra_handlers = None):
+    def __init__(self, id, samplesheet, config, extra_handlers = None):
         LoggedObject.__init__(self, id = id, extra_handlers = extra_handlers)
-        global sequencer_dir
-        global demultiplex_580_script
-        global logdir
-        global script_timestamp
-        global samplesheet_processed_dir
-        global email_recipients
-        global reply_to_servername
         # the NextSeq run ID assigned by the sequencer; the name of the run's parent output directory
         self.id = str(id)
-        # ~~~~ LOGGING ~~~~~~ #
-        # set a run-specific Info log file for email
-        self.logfile = os.path.join(logdir, '{0}.{1}.log'.format(self.id, script_timestamp))
+        self.samplesheet = samplesheet
+        self.config = config
+
+        self._init_log()
+        self._init_attrs()
+
+    def _init_log(self):
+        '''
+        Initialize the logging for the object
+        set a run-specific Info log file for email
+        '''
+        self.logfile = os.path.join(self.config['logdir'], '{0}.{1}.log'.format(self.id, self.config['script_timestamp']))
         self.logger = log.add_handlers(logger = self.logger, handlers = [log.email_log_filehandler(log_file = self.logfile) ])
 
         self.logger.info("Found NextSeq NGS580 run: {0}".format(self.id))
         self.log_handler_paths(logger = self.logger, types = ['FileHandler'])
 
+    def _init_attrs(self):
+        '''
+        Initialize the paths and attributes for items associated with the sequencing run
+        '''
+        self.logger.info("Samplesheet file: {0}".format(self.samplesheet))
+        self.samplesheet_processed_dir = self.config['samplesheet_processed_dir']
 
-        # ~~~~ ATTRIBUTES ~~~~~~ #
-        self.samplesheet = samplesheet
-        self.logger.info("Samplesheet file: {0}".format(samplesheet))
-        self.samplesheet_processed_dir = samplesheet_processed_dir
-
+        # location of sequencer data output directories
+        self.sequencer_dir = self.config['sequencer_dir']
 
         # path to the run's data output directory
-        self.run_dir = os.path.join(sequencer_dir, self.id)
+        self.run_dir = os.path.join(self.sequencer_dir, self.id)
 
-        # file that says what kind of sequencing it is, will be created, should say 'NGS580' on the first line
+        # file that will say what kind of sequencing it is, will be created, should say 'NGS580' on the first line
         self.seqtype_file = os.path.join(self.run_dir, "seqtype.txt")
 
         # 'BaseCalls' directory that holds .bcl files for the run
         self.basecalls_dir = os.path.join(self.run_dir, "Data", "Intensities", "BaseCalls")
 
-        # 'Unaligned' dir which holds the demultiplexed .fastq files for the run
+        # 'Unaligned' dir which will hold the demultiplexed .fastq files for the run; will be created by the demultiplexing script
         self.unaligned_dir = os.path.join(self.basecalls_dir, "Unaligned")
         self.logger.debug('self.unaligned_dir: {0}'.format(self.unaligned_dir))
 
@@ -119,27 +133,29 @@ class NextSeqRun(LoggedObject):
         self.samplesheet_output_file = os.path.join(self.basecalls_dir, "SampleSheet.csv")
 
         # shell command to run to start the demultiplexing script
-        self.command = '{0} {1}'.format(demultiplex_580_script, self.id)
+        self.demultiplex_580_script = self.config['demultiplex_580_script']
+        self.command = '{0} {1}'.format(self.demultiplex_580_script, self.id)
 
         # metadata file with more info about the run
         self.RunInfo_file = os.path.join(self.run_dir, "RunInfo.xml")
 
         # files produced when the basecalling for the run is finished
         self.RTAComplete_file = os.path.join(self.run_dir, "RTAComplete.txt")
-        self.RTAComplete_time = None
+
 
         self.RunCompletionStatus_file = os.path.join(self.run_dir, "RunCompletionStatus.xml")
 
-
-
         # ~~~~ EMAIL ATTRIBUTES ~~~~~~ #
-        self.email_recipients = email_recipients
+        self.email_recipients = self.config['email_recipients']
         self.email_subject_line = '[Demultiplexing] NextSeq Run {0}'.format(self.id)
-        self.reply_to_servername = reply_to_servername
+        self.reply_to_servername = self.config['reply_to_servername']
         self.reply_to = self.get_reply_to_address(server = self.reply_to_servername)
 
-
+        # ~~~~ MISC ATTRIBUTES ~~~~~~ #
+        self.seqtype = self.config['seqtype']
+        self.RTAComplete_time = None
         self.is_valid = False
+
 
     def get_RTAComplete_time(self):
         '''
@@ -228,37 +244,39 @@ class NextSeqRun(LoggedObject):
         # check basecalling completion time; at least 90 minutes must have passed
         RTA_completion_time_validation = self.valiate_RTA_completion_time()
         unaligned_dir_validation = self.validate_unaligned_dir(unaligned_dir = self.unaligned_dir)
-
         run_dir_validation = self.item_exists(item = self.run_dir, item_type = 'dir')
-        self.logger.debug('Run dir exists: {0}'.format(run_dir_validation))
-
         basecalls_dir_validation = self.item_exists(item = self.basecalls_dir, item_type = 'dir')
-        self.logger.debug('Basecalls dir exists: {0}'.format(basecalls_dir_validation))
-
         RTAComplete_file_validation = self.item_exists(item = self.RTAComplete_file, item_type = 'file')
-        self.logger.debug('RTAComplete file exists: {0}'.format(RTAComplete_file_validation))
-
         RunInfo_file_validation = self.item_exists(item = self.RunInfo_file, item_type = 'file')
-        self.logger.debug('RunInfo file exists: {0}'.format(RunInfo_file_validation))
-
         RunCompletionStatus_file_validation = self.item_exists(item = self.RunCompletionStatus_file, item_type = 'file')
-        self.logger.debug('RunCompletionStatus file exists: {0}'.format(RunCompletionStatus_file_validation))
-
         input_samplesheet_validation = self.item_exists(item = self.samplesheet, item_type = 'file')
-        self.logger.debug('input_samplesheet file exists: {0}'.format(input_samplesheet_validation))
 
-        validations = [
-        RTA_completion_time_validation,
-        unaligned_dir_validation,
-        run_dir_validation,
-        basecalls_dir_validation,
-        RTAComplete_file_validation,
-        RunInfo_file_validation,
-        RunCompletionStatus_file_validation,
-        input_samplesheet_validation
-        ]
+        validations = {}
+        validations['RTA_completion_time_validation'] = RTA_completion_time_validation
+        validations['unaligned_dir_validation'] = unaligned_dir_validation
+        validations['run_dir_validation'] = run_dir_validation
+        validations['basecalls_dir_validation'] = basecalls_dir_validation
+        validations['RTAComplete_file_validation'] = RTAComplete_file_validation
+        validations['RunInfo_file_validation'] = RunInfo_file_validation
+        validations['RunCompletionStatus_file_validation'] = RunCompletionStatus_file_validation
+        validations['input_samplesheet_validation'] = input_samplesheet_validation
 
-        is_valid = all(validations)
+        for name, value in validations.items():
+            self.logger.debug('{0}: {1}'.format(name, value))
+
+        # validations = [
+        # RTA_completion_time_validation,
+        # unaligned_dir_validation,
+        # run_dir_validation,
+        # basecalls_dir_validation,
+        # RTAComplete_file_validation,
+        # RunInfo_file_validation,
+        # RunCompletionStatus_file_validation,
+        # input_samplesheet_validation
+        # ]
+
+        self.logger.debug(validations)
+        is_valid = all(validations.values())
         self.logger.info('All run validations passed: {0}'.format(is_valid))
         return(is_valid)
 
@@ -324,6 +342,16 @@ mv {0} {1}
 '''.format(new_filepath, os.path.abspath(samplesheet)))
             os.rename(samplesheet, new_filepath)
 
+    def mark_run_seqtype(self, seqtype, seqtype_file):
+        '''
+        Mark the 'sequencing type' for the run so that other modules can recognize this run as
+        being an NGS580 run
+        Do this by writing a 'seqtype.txt' file with the contents 'NGS580' to the run's parent dir
+        '''
+        with open(seqtype_file, 'w') as f:
+            f.write(seqtype + '\n')
+
+
     def start(self):
         '''
         Start the demultiplexing for the run
@@ -354,7 +382,7 @@ def find_samplesheets():
     ex:
     /ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/NGS580/170519_NB501073_0010_AHCLLMBGX2-SampleSheet.csv
     '''
-    global samplesheet_source_dir
+    # global samplesheet_source_dir
     file_pattern = "*-SampleSheet.csv"
     samplesheet_files = [item for item in find.find(search_dir = samplesheet_source_dir, inclusion_patterns = file_pattern, search_type = 'file', level_limit = 1)]
     logger.debug("Samplesheets found: {0}".format(samplesheet_files))
@@ -369,7 +397,7 @@ def make_runs(samplesheets):
     for samplesheet in samplesheets:
         runID = get_runID(samplesheet_file = samplesheet)
         logger.debug("runID is: {0}".format(runID))
-        runs.append(NextSeqRun(id = runID, samplesheet = samplesheet, extra_handlers = [x for x in log.get_all_handlers(logger = logger)]))
+        runs.append(NextSeqRun(id = runID, samplesheet = samplesheet, config = configs, extra_handlers = [x for x in log.get_all_handlers(logger = logger)]))
     return(runs)
 
 def start_runs(runs):
