@@ -1,3 +1,2 @@
-*/45 * * * 4,5,6,7 . /ifs/data/molecpathlab/scripts/run-monitor/cron/.profile; /ifs/data/molecpathlab/scripts/run-monitor/lyz/monitor.py >> /ifs/data/molecpathlab/scripts/run-monitor/cron/logs/cron.log 2>&1
-# run every 45 minutes, 0,15,30,45
-# run only on Thurs, Fri, Sat, Sun
+0 * * * * . /ifs/data/molecpathlab/scripts/run-monitor/cron/.profile; /ifs/data/molecpathlab/scripts/run-monitor/lyz/monitor.py >> /ifs/data/molecpathlab/scripts/run-monitor/cron/logs/cron.log 2>&1
+# run every hour
