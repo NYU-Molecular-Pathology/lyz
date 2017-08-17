@@ -20,10 +20,6 @@ handlers:
     () : __main__.logpath
     level: DEBUG   
     formatter: default
-  # NGS580_demultiplexing.email:
-  #   () : __main__.NGS580_demultiplexing_email_logpath
-  #   level: INFO
-  #   formatter: default
 
 loggers:
   monitor:
@@ -34,10 +30,6 @@ loggers:
     level: DEBUG
     handlers: [console, main]
     propagate: true
-  # NGS580_demultiplexing:
-  #   level: DEBUG
-  #   handlers: [console, main, NGS580_demultiplexing.email]
-  #   propagate: true
   tools:
     level: DEBUG
     handlers: [console, main]
