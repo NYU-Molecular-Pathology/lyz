@@ -262,8 +262,9 @@ class NextSeqRun(LoggedObject):
         validations['RunCompletionStatus_file_validation'] = RunCompletionStatus_file_validation
         validations['seqtype_validation'] = seqtype_validation
 
-        for name, value in validations.items():
-            self.logger.debug('{0}: {1}'.format(name, value))
+        # for name, value in validations.items():
+        #     self.logger.debug('{0}: {1}'.format(name, value))
+        self.logger.debug(validations)
 
         is_valid = all(validations.values())
         self.logger.info('All run validations passed: {0}'.format(is_valid))

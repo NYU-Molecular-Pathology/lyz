@@ -261,19 +261,8 @@ class NextSeqRun(LoggedObject):
         validations['RunCompletionStatus_file_validation'] = RunCompletionStatus_file_validation
         validations['input_samplesheet_validation'] = input_samplesheet_validation
 
-        for name, value in validations.items():
-            self.logger.debug('{0}: {1}'.format(name, value))
-
-        # validations = [
-        # RTA_completion_time_validation,
-        # unaligned_dir_validation,
-        # run_dir_validation,
-        # basecalls_dir_validation,
-        # RTAComplete_file_validation,
-        # RunInfo_file_validation,
-        # RunCompletionStatus_file_validation,
-        # input_samplesheet_validation
-        # ]
+        # for name, value in validations.items():
+        #     self.logger.debug('{0}: {1}'.format(name, value))
 
         self.logger.debug(validations)
         is_valid = all(validations.values())
