@@ -1,9 +1,23 @@
+# location to save the output for analysis (deprecated here?)
 analysis_output_dir: /ifs/data/molecpathlab/NGS580_WES
-# auto_demultiplex_dir: /ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/NGS580
+
+# location to look for Sample sheets
 samplesheet_source_dir: /ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/NGS580
+
+# location to move processed samplesheets to
 samplesheet_processed_dir: /ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/processed
+
+# script to use for demultiplexing
 script: /ifs/data/molecpathlab/scripts/demultiplexing/demultiplex-NGS580-WES.sh
+
+# location to save demultiplexing log files
 logdir: /ifs/data/molecpathlab/quicksilver/automatic_demultiplexing_logs
+
+# comma separated list of email addresses to send notification & logs to
 email_recipients: '#MolecularPathology@nyumc.org'
+
+# name of reply-to email server
 reply_to_servername: 'nyumc.org'
+
+# the 'type' of sequencing, corresponds to label that will be detected by auto-analysis start module
 seqtype: NGS580

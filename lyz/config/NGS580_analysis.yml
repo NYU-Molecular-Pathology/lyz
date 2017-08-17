@@ -1,7 +1,20 @@
+# script to run to start the analysis
 script: /ifs/data/molecpathlab/scripts/NGS580/start_NGS580_WES_analysis.sh
+
+# location of the local copy of Igor's sns pipeline to use for the analysis
 sns_dir: /ifs/data/molecpathlab/scripts/sns
-email_recipients: '#MolecularPathology@nyumc.org'
-reply_to_servername: 'nyumc.org'
+
+# the exome targets file to be used for the variant calling
 wes_targets_bed: /ifs/data/molecpathlab/NGS580_WES/NGS580_targets.bed
+
+# the 'type' of sequencing, corresponds to label that should be set by the demultiplexing script
 seqtype: NGS580
+
+# location to save the results to
 analysis_output_dir: /ifs/data/molecpathlab/NGS580_WES
+
+# comma separated list of email addresses to send notification & logs to
+email_recipients: '#MolecularPathology@nyumc.org'
+
+# name of reply-to email server
+reply_to_servername: 'nyumc.org'
