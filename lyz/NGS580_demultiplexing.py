@@ -7,8 +7,6 @@ This script will:
 - check if found sample sheets match run's available in the NextSeq output directory
 - check if matching runs are 'valid' and ready to be demultiplexed
 '''
-# ~~~~ GLOBALS ~~~~~~ #
-
 # ~~~~~ LOGGING ~~~~~~ #
 import log
 import logging
