@@ -1,2 +1,3 @@
+# location of sequencer data output
 location: /ifs/data/molecpathlab/quicksilver
 location_type: local

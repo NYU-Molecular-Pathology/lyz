@@ -8,21 +8,6 @@ This script will check for the completion of NGS580 demultiplexing, and conditio
 copy of the script here:
 https://github.com/NYU-Molecular-Pathology/protocols/blob/c90653b31d2a65d6df357984e156279ff7f5895c/NGS580/start_NGS580_WES_analysis.sh
 '''
-# ~~~~ GLOBALS ~~~~~~ #
-import config
-# location of sequencer data output
-sequencer_dir = config.NextSeq['location']
-
-# location where started/completed/processed runs are output
-analysis_output_dir = config.NGS580_analysis['analysis_output_dir']
-
-# script to use for demultiplexing
-start_NGS580_script = config.NGS580_analysis['script']
-
-email_recipients = config.NGS580_analysis['email_recipients']
-reply_to_servername = config.NGS580_analysis['reply_to_servername']
-
-
 # ~~~~~ LOGGING ~~~~~~ #
 import log
 import logging
@@ -40,12 +25,36 @@ logger = log.build_logger(name = "NGS580_analysis")
 logger.addHandler(log.create_main_filehandler(log_file = log_file, name = "NGS580_analysis"))
 # make the file handler global for use elsewhere
 main_filehandler = log.get_logger_handler(logger = logger, handler_name = 'NGS580_analysis')
-
 logger.debug("loading NGS580_analysis module")
 
 
+# ~~~~ GET EXTERNAL CONFIGS ~~~~~~ #
+import config
+sequencer_dir = config.NextSeq['location']
+analysis_output_dir = config.NGS580_analysis['analysis_output_dir']
+start_NGS580_script = config.NGS580_analysis['script']
+email_recipients = config.NGS580_analysis['email_recipients']
+reply_to_servername = config.NGS580_analysis['reply_to_servername']
 
-# ~~~~ LOAD PACKAGES ~~~~~~ #
+
+
+# ~~~~ CREATE INTERNAL CONFIGS ~~~~~~ #
+# bundle configs into a dict
+configs = {}
+configs['sequencer_dir'] = sequencer_dir
+configs['analysis_output_dir'] = analysis_output_dir
+configs['start_NGS580_script'] = start_NGS580_script
+configs['email_recipients'] = email_recipients
+configs['reply_to_servername'] = reply_to_servername
+configs['scriptdir'] = scriptdir
+configs['logdir'] = logdir
+configs['log_file'] = log_file
+configs['main_filehandler'] = main_filehandler
+configs['script_timestamp'] = script_timestamp
+
+
+
+# ~~~~ LOAD MORE PACKAGES ~~~~~~ #
 import sys
 import tools as t
 import find
@@ -55,6 +64,7 @@ import mutt
 import getpass
 
 
+
 # ~~~~ CUSTOM CLASSES ~~~~~~ #
 class NextSeqRun(LoggedObject):
     '''
@@ -62,42 +72,34 @@ class NextSeqRun(LoggedObject):
 
     from NGS580_analysis import NextSeqRun
     x = NextSeqRun(id = '170809_NB501073_0019_AH5FFYBGX3')
+
+    config is a dict
     '''
-    def __init__(self, id, extra_handlers = None):
+    def __init__(self, id, config, extra_handlers = None):
         LoggedObject.__init__(self, id = id, extra_handlers = extra_handlers)
-        global sequencer_dir
-        global start_NGS580_script
-        global email_recipients
-        global reply_to_servername
-        global script_timestamp
-        global logdir
 
         self.id = id
+        self.config = config
 
-        # ~~~~ LOGGING ~~~~~~ #
-        # set a run-specific Info log file for email
-        self.logfile = os.path.join(logdir, '{0}.{1}.log'.format(self.id, script_timestamp))
+        self._init_log()
+        self._init_attrs()
+
+    def _init_log(self):
+        '''
+        Initialize the logging for the object
+        set a run-specific Info log file for email
+        '''
+        self.logfile = os.path.join(self.config['logdir'], '{0}.{1}.log'.format(self.id, self.config['script_timestamp']))
         self.logger = log.add_handlers(logger = self.logger, handlers = [log.email_log_filehandler(log_file = self.logfile) ])
 
-
-        self.sequencer_dir = sequencer_dir
-        self.start_NGS580_script = start_NGS580_script
-        self.command = '{0} {1}'.format(self.start_NGS580_script, self.id)
-        self.RTAComplete_time = None
-        self.is_valid = False
-        self._init_paths()
-
-
-        # ~~~~ EMAIL ATTRIBUTES ~~~~~~ #
-        self.email_recipients = email_recipients
-        self.email_subject_line = '[NGS580] Started {0}'.format(self.id)
-        self.reply_to_servername = reply_to_servername
-        self.reply_to = self.get_reply_to_address(server = self.reply_to_servername)
-
-    def _init_paths(self):
+    def _init_attrs(self):
         '''
-        Initialize the paths for items associated with the sequencing run
+        Initialize the paths and attributes for items associated with the sequencing run
         '''
+        # ~~~~ LOCATIONS & FILES ~~~~~~ #
+        # location of sequencer data output directories
+        self.sequencer_dir = self.config['sequencer_dir']
+
         # path to the run's data output directory
         self.run_dir = os.path.join(self.sequencer_dir, self.id)
 
@@ -113,14 +115,27 @@ class NextSeqRun(LoggedObject):
         # file that says what kind of sequencing it is, should be 'NGS580' on the first line
         self.seqtype_file = os.path.join(self.run_dir, "seqtype.txt")
 
-
         # metadata file with more info about the run
         self.RunInfo_file = os.path.join(self.run_dir, "RunInfo.xml")
 
         # files produced when the basecalling for the run is finished
         self.RTAComplete_file = os.path.join(self.run_dir, "RTAComplete.txt")
         self.RunCompletionStatus_file = os.path.join(self.run_dir, "RunCompletionStatus.xml")
+
+
+        self.start_NGS580_script = self.config['start_NGS580_script']
+        self.command = '{0} {1}'.format(self.start_NGS580_script, self.id)
+
+        # ~~~~ EMAIL ATTRIBUTES ~~~~~~ #
+        self.email_recipients = self.config['email_recipients']
+        self.email_subject_line = '[NGS580] Started {0}'.format(self.id)
+        self.reply_to_servername = self.config['reply_to_servername']
+        self.reply_to = self.get_reply_to_address(server = self.reply_to_servername)
+
+        # ~~~~ MISC ATTRIBUTES ~~~~~~ #
+        self.RTAComplete_time = None
         self.seqtype = self.get_seqtype(seqtype_file = self.seqtype_file)
+        self.is_valid = False
 
     def get_seqtype(self, seqtype_file):
         '''
@@ -129,7 +144,7 @@ class NextSeqRun(LoggedObject):
         '''
         contents = None
         try:
-            with open(self.seqtype_file, "rb") as f:
+            with open(seqtype_file, "rb") as f:
                 contents = f.readlines()[0].strip()
         except:
             self.logger.error("Seqtype file could not be read! File:\n{0}\nContents:\n{1}".format(seqtype_file, contents))
@@ -322,7 +337,7 @@ def find_available_NextSeq_runs(sequencer_dir):
     for item in find.find(search_dir = sequencer_dir, exclusion_patterns = excludes, search_type = 'dir', level_limit = 0):
         item_id = os.path.basename(item)
         sequencer_dirs[item_id] = item
-    runs = [NextSeqRun(id = name, extra_handlers = [x for x in log.get_all_handlers(logger = logger)]) for name, path in sequencer_dirs.items()]
+    runs = [NextSeqRun(id = name, config = configs, extra_handlers = [x for x in log.get_all_handlers(logger = logger)]) for name, path in sequencer_dirs.items()]
 
     NGS580_runs = []
     for run in runs:

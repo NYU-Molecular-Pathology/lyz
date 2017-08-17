@@ -27,6 +27,8 @@ samplesheet_processed_dir = config.NGS580_demultiplexing['samplesheet_processed_
 email_recipients = config.NGS580_demultiplexing['email_recipients']
 reply_to_servername = config.NGS580_demultiplexing['reply_to_servername']
 
+seqtype = config.NGS580_demultiplexing['seqtype']
+
 # ~~~~~ LOGGING ~~~~~~ #
 import log
 import logging
@@ -99,8 +101,12 @@ class NextSeqRun(LoggedObject):
         self.logger.info("Samplesheet file: {0}".format(samplesheet))
         self.samplesheet_processed_dir = samplesheet_processed_dir
 
+
         # path to the run's data output directory
         self.run_dir = os.path.join(sequencer_dir, self.id)
+
+        # file that says what kind of sequencing it is, will be created, should say 'NGS580' on the first line
+        self.seqtype_file = os.path.join(self.run_dir, "seqtype.txt")
 
         # 'BaseCalls' directory that holds .bcl files for the run
         self.basecalls_dir = os.path.join(self.run_dir, "Data", "Intensities", "BaseCalls")
