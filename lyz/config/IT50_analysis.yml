@@ -1,0 +1,11 @@
+# location of the local copy of reportIT pipeline
+pipeline_dir: /ifs/data/molecpathlab/IonTorrent_reporter/pipeline
+
+# directory in the pipeline dir that has the code scripts
+code_dir: /ifs/data/molecpathlab/IonTorrent_reporter/pipeline/code
+
+# comma separated list of email addresses to send notification & logs to
+email_recipients: '#MolecularPathology@nyumc.org'
+
+# name of reply-to email server
+reply_to_servername: 'nyumc.org'

@@ -52,22 +52,28 @@ import find
 import qsub
 import git
 import NGS580_demultiplexing
-
+import NGS580_analysis
+import IT50_analysis
 
 # ~~~~ FUNCTIONS ~~~~~~ #
+def demo():
+    '''
+    Demo some functions of the program
+    '''
+    find.find(search_dir = '.', inclusion_patterns = '*.py', num_limit = 3)
+    logger.debug("Here is the file handler: {0}".format(log.get_logger_handler(logger = logger, handler_name = "main")))
+    find.find(search_dir = '.', pattern = '*.py')
+    find.find(search_dir = '.', pattern = 't*', level_limit = 1)
+    find.find(search_dir = '.', pattern = 't*', search_type = 'file', level_limit = 2)
+
 def main():
     '''
     Main control function for the program
     '''
     logger.debug("Running the monitor")
-
-    # demo
-    find.find(search_dir = '.', inclusion_patterns = '*.py', num_limit = 3)
-    # logger.debug("Here is the file handler: {0}".format(log.get_logger_handler(logger = logger, handler_name = "main")))
-    # find.find(search_dir = '.', pattern = '*.py')
-    # find.find(search_dir = '.', pattern = 't*', level_limit = 1)
-    # find.find(search_dir = '.', pattern = 't*', search_type = 'file', level_limit = 2)
-    NGS580_demultiplexing.main(extra_handlers = [main_filehandler] )
+    NGS580_demultiplexing.main(extra_handlers = [main_filehandler])
+    NGS580_analysis.main(extra_handlers = [main_filehandler])
+    IT50_analysis.main(extra_handlers = [main_filehandler])
 
 
 def run():

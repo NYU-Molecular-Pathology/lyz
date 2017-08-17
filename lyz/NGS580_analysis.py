@@ -368,6 +368,8 @@ def start_runs(runs):
     '''
     Run the start method on each run
     '''
+    if len(runs) > 0:
+        logger.debug("starting runs: {0}".format(runs))
     for run in runs:
         run.start()
 
@@ -383,9 +385,9 @@ def main(extra_handlers = None):
         logger.debug("extra_handlers: {0}".format(extra_handlers))
         for h in extra_handlers:
             logger.addHandler(h)
-    logger.debug("here are the current handlers:")
-    for h in logger.__dict__['handlers']:
-        logger.debug(h.get_name())
+    # logger.debug("here are the current handlers:")
+    # for h in logger.__dict__['handlers']:
+    #     logger.debug(h.get_name())
     logger.info("Current time: {0}".format(t.timestamp()))
     logger.info("Log file path: {0}".format(log.logger_filepath(logger = logger, handler_name = "NGS580_analysis")))
 
@@ -399,7 +401,6 @@ def main(extra_handlers = None):
             runs_to_start.append(run)
 
     logger.debug("runs_to_start: {0}".format(runs_to_start))
-    logger.debug("starting runs")
     start_runs(runs = runs_to_start)
 
 

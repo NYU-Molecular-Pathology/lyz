@@ -4,6 +4,8 @@
 '''
 General utility functions and classes for the program
 '''
+import sys
+import os
 import subprocess as sp
 import logging
 logger = logging.getLogger("tools")
@@ -35,6 +37,26 @@ class SubprocessCmd(object):
         self.process = sp.Popen(command, stdout = sp.PIPE, shell = True, universal_newlines = True)
         self.proc_stdout = self.process.communicate()[0].strip()
 
+
+class DirHop(object):
+    '''
+    A class for executing commands in the context of a different working directory
+    adapted from: https://mklammler.wordpress.com/2011/08/14/safe-directory-hopping-with-python/
+
+    with DirHop('/some/dir') as d:
+        do_something()
+    '''
+    def __init__(self, directory):
+        self.old_dir = os.getcwd()
+        self.new_dir = directory
+    def __enter__(self):
+        logger.debug('Changing working directory to: {0}'.format(self.new_dir))
+        os.chdir(self.new_dir)
+        return(self)
+    def __exit__(self, type, value, traceback):
+        logger.debug('Changing working directory back to: {0}'.format(self.old_dir))
+        os.chdir(self.old_dir)
+        return(isinstance(value, OSError))
 
 
 # ~~~~ CUSTOM FUNCTIONS ~~~~~~ #
@@ -150,3 +172,30 @@ def load_json(input_file):
     with open(input_file,"r") as f:
         my_item = json.load(f)
     return my_item
+
+def item_exists(item, item_type = 'any', n = False):
+    '''
+    Check that an item exists
+    item_type is 'any', 'file', 'dir'
+    n is True or False and negates 'exists'
+    '''
+    exists = False
+    if item_type == 'any':
+        exists = os.path.exists(item)
+    elif item_type == 'file':
+        exists = os.path.isfile(item)
+    elif item_type == 'dir':
+        exists = os.path.isdir(item)
+    if n:
+        exists = not exists
+    return(exists)
+
+def reply_to_address(servername, username = None):
+    '''
+    Get the email address to use for the 'reply to' field in emails
+    '''
+    import getpass
+    if not username:
+        username = getpass.getuser()
+    address = username + '@' + servername
+    return(address)
