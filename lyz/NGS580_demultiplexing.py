@@ -8,7 +8,7 @@ This script will:
 - check if matching runs are 'valid' and ready to be demultiplexed
 '''
 # ~~~~~ LOGGING ~~~~~~ #
-import log
+from util import log
 import logging
 import os
 
@@ -62,12 +62,14 @@ configs['script_timestamp'] = script_timestamp
 # ~~~~ LOAD MORE PACKAGES ~~~~~~ #
 import shutil
 import sys
-import tools as t
-import find
-from classes import LoggedObject
 import subprocess as sp
-import mutt
 import getpass
+from datetime import datetime
+from util import tools as t
+from util import find
+from util import mutt
+from util.classes import LoggedObject
+
 
 
 
@@ -161,7 +163,6 @@ class NextSeqRun(LoggedObject):
         ex:
         RTA 2.4.11 completed on 5/20/2017 9:47:13 PM
         '''
-        from datetime import datetime
         with open(self.RTAComplete_file) as f:
             for line in f:
                 RTA_string = line.strip()
@@ -176,7 +177,7 @@ class NextSeqRun(LoggedObject):
         Make sure that at least 90 minutes have passed since the RTAcomplete file's stated timestamp
         90min = 5400 seconds
         '''
-        from datetime import datetime
+
         self.logger.debug('Validating Basecalling completetion time')
         is_valid = False
 

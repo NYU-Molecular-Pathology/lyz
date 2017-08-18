@@ -9,7 +9,7 @@ copy of the script here:
 https://github.com/NYU-Molecular-Pathology/protocols/blob/c90653b31d2a65d6df357984e156279ff7f5895c/NGS580/start_NGS580_WES_analysis.sh
 '''
 # ~~~~~ LOGGING ~~~~~~ #
-import log
+from util import log
 import logging
 import os
 
@@ -56,12 +56,15 @@ configs['script_timestamp'] = script_timestamp
 
 # ~~~~ LOAD MORE PACKAGES ~~~~~~ #
 import sys
-import tools as t
-import find
-from classes import LoggedObject
-from tools import SubprocessCmd
-import mutt
 import getpass
+from datetime import datetime
+from util import tools as t
+from util import find
+from util import mutt
+from util.classes import LoggedObject
+from util.tools import SubprocessCmd
+
+
 
 
 
@@ -156,7 +159,6 @@ class NextSeqRun(LoggedObject):
         ex:
         RTA 2.4.11 completed on 5/20/2017 9:47:13 PM
         '''
-        from datetime import datetime
         RTA_time = None
         try:
             with open(self.RTAComplete_file) as f:
@@ -175,7 +177,6 @@ class NextSeqRun(LoggedObject):
         Make sure that at least 90 minutes have passed since the RTAcomplete file's stated timestamp
         90min = 5400 seconds
         '''
-        from datetime import datetime
         self.logger.debug('Validating Basecalling completetion time')
         is_valid = False
 

@@ -4,3 +4,6 @@
 [submodule "lyz/toolbox"]
 	path = lyz/toolbox
 	url = git@github.com:stevekm/toolbox.git
+[submodule "lyz/util"]
+	path = lyz/util
+	url = https://github.com/NYU-Molecular-Pathology/util.git

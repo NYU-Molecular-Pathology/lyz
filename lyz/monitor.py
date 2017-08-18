@@ -7,7 +7,7 @@ Developed and tested with Python 2.7
 '''
 # ~~~~~ LOGGING ~~~~~~ #
 import os
-import log # the app's logging submodule
+from util import log # the app's logging submodule
 import logging
 
 # set logging globals
@@ -47,10 +47,9 @@ logger.debug("Path to the monitor's log file: {0}".format(log.logger_filepath(lo
 
 # ~~~~ PROGRAM LIBRARIES ~~~~~~ #
 import config
-import tools as t
-import find
-import qsub
-import git
+from util import tools as t
+from util import find
+from util import qsub
 import NGS580_demultiplexing
 import NGS580_analysis
 import IT50_analysis

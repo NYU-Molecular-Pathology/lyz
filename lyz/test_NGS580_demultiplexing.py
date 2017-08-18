@@ -7,7 +7,7 @@ unit tests for the find module
 import unittest
 import os
 from NGS580_demultiplexing import NextSeqRun
-import log
+from util import log
 
 scriptdir = os.path.dirname(os.path.realpath(__file__))
 fixture_dir = os.path.join(scriptdir, "fixtures")

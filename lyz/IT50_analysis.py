@@ -13,7 +13,7 @@ Runs should not be analyzed automatically since they usually need a small manual
 to correctly set the run-pairs, so skip that step for now
 '''
 # ~~~~~ LOGGING ~~~~~~ #
-import log
+from util import log
 import logging
 import os
 
@@ -65,9 +65,9 @@ configs['reply_to_servername'] = reply_to_servername
 
 # ~~~~ LOAD MORE PACKAGES ~~~~~~ #
 import sys
-import tools as t
-from tools import DirHop
-import mutt
+from util import tools as t
+from util.tools import DirHop
+from util import mutt
 
 
 
