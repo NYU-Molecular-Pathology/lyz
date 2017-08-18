@@ -1,2 +1,2 @@
-0 * * * * . /ifs/data/molecpathlab/scripts/run-monitor/cron/.profile; /ifs/data/molecpathlab/scripts/run-monitor/lyz/monitor.py >> /ifs/data/molecpathlab/scripts/run-monitor/cron/logs/cron.log 2>&1
+0 * * * * . /ifs/home/kellys04/.profile && . /ifs/home/kellys04/.bash_profile && python /ifs/data/molecpathlab/scripts/run-monitor/lyz/monitor.py >> /ifs/data/molecpathlab/scripts/run-monitor/cron/logs/cron.log 2>&1
 # run every hour
