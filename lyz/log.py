@@ -58,7 +58,7 @@ def get_logger_handler(logger, handler_name, handler_type = 'FileHandler'):
             if handler_name == logname:
                 return(h)
 
-def get_all_handlers(logger, types = ['FileHandler']):
+def get_all_handlers(logger, types = ('FileHandler',)):
     '''
     Get all logger handlers of the given types from the logger
     types = ['FileHandler', 'StreamHandler']
@@ -74,6 +74,14 @@ def remove_handlers(logger, handlers):
     '''
     for h in logger.__dict__['handlers']:
         logger.removeHandler(h)
+    return(logger)
+
+def remove_all_handlers(logger, types = ('FileHandler', 'StreamHandler')):
+    '''
+    Remove all of the handlers from a logger object
+    '''
+    handlers = [h for h in get_all_handlers(logger = logger, types = types)]
+    logger = remove_handlers(logger = logger, handlers = handlers)
     return(logger)
 
 def add_handlers(logger, handlers):

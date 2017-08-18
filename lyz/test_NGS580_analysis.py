@@ -39,8 +39,7 @@ class TestNextSeqRun(unittest.TestCase):
         run_id = '170809_NB501073_0019_AH5FFYBGX3'
         x = NextSeqRun(id = run_id, config = configs)
         # remove the handlers because they are too verbose here
-        handlers = [h for h in log.get_all_handlers(logger = x.logger, types = ['FileHandler', 'StreamHandler'])]
-        x.logger = log.remove_handlers(logger = x.logger, handlers = handlers)
+        x.logger = log.remove_all_handlers(logger = x.logger)
         self.assertTrue(x.validate(), 'Valid run did not pass validations')
 
     def test_invalid_NextSeq_run1(self):
@@ -49,8 +48,7 @@ class TestNextSeqRun(unittest.TestCase):
         '''
         run_id = '170809_NB501073_0019_AH5FFYBGX3_broke1'
         x = NextSeqRun(id = run_id, config = configs)
-        handlers = [h for h in log.get_all_handlers(logger = x.logger, types = ['FileHandler', 'StreamHandler'])]
-        x.logger = log.remove_handlers(logger = x.logger, handlers = handlers)
+        x.logger = log.remove_all_handlers(logger = x.logger)
         self.assertFalse(x.validate(), 'Invalid run passed validations')
 
 
