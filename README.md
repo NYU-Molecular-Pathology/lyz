@@ -37,6 +37,8 @@ You can add your own tasks to `lyz` by creating a Python submodule with the code
 
 # Features
 
+- __NOTE:__ Many program features have been packaged in the [`util`](https://github.com/NYU-Molecular-Pathology/util) Python module.
+
 ## Logging
 
 Logging has been implemented at several levels throughout the program. The main program modules use a static logging configuation loaded from the file `lyz/logging.yml`, which saves output to the `lyz/logs` subdirectory by default. To facilitate logging in an end-user's customized modules, the `log` submodule contains many functions for building and interacting with Python `logging` objects. Additionally, the `classes` submodule contains the `LoggedObject` class which can be used to create objects which have their own logging instances.
