@@ -1,3 +1,9 @@
+# 
+#
+# This is an example profile to use for cron
+# use a file like this to load all the environment variables needed 
+# to run the cron job
+#
 # profile to use for cron jobs on NYULMC phoenix compute cluster
 # copy/pasted from the profile files I have set already
 
