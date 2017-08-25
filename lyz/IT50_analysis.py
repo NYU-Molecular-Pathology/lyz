@@ -89,7 +89,7 @@ def email_notification(new_runs_dict):
     mutt.subprocess_cmd(command = email_command)
 
 
-def main(extra_handlers = None):
+def main(extra_handlers = None, download = True):
     '''
     Main control function for the program
     '''
@@ -108,12 +108,14 @@ def main(extra_handlers = None):
     # change working directory to the pipeline dir and execute Python scripts there
     with DirHop(pipeline_dir) as d:
         from code import check_for_new_runs
-        new_runs_dict = check_for_new_runs.main() # download = True
+        new_runs_dict = check_for_new_runs.main(download = download) # output = {'runs': [validated_missing_runs], 'samplesheet_file': samplesheet_file}
         logger.info('New runs found: {0}'.format(new_runs_dict['runs']))
-        logger.debug('New runs samplesheet path: {0}'.format(new_runs_dict['samplesheet_file']))
+        if download:
+            logger.info('New runs files will be transferred from IonTorrent server')
+        logger.info('New runs samplesheet path: {0}'.format(new_runs_dict['samplesheet_file']))
 
     if new_runs_dict['runs']:
-        logger.info('New IonTorrent runs are available for analysis.')
+        logger.info('New IonTorrent runs are available for analysis. Please start the analysis at the following server location:\n\n{0}'.format(configs['pipeline_dir']))
         email_notification(new_runs_dict)
 
 
