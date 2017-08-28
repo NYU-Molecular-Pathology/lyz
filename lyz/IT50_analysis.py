@@ -62,7 +62,7 @@ configs['reply_to_servername'] = reply_to_servername
 
 configs['samplesheet_script'] = config.IT50_analysis['samplesheet_script']
 configs['run_script'] = config.IT50_analysis['run_script']
-
+configs['mail_script'] = config.IT50_analysis['mail_script']
 
 
 # ~~~~ LOAD MORE PACKAGES ~~~~~~ #
@@ -127,11 +127,15 @@ cd {0}
 
 # run samplesheet
 {2} '<your samplesheet>'
+
+# mail the results
+{3} '<analysis ID>'
         '''.format(
         configs['pipeline_dir'],
         configs['samplesheet_script'],
-        configs['run_script']
-        )
+        configs['run_script'],
+        configs['mail_script']
+        ))
         # logger.info('New IonTorrent runs are available for analysis. Please start the analysis at the following server location:\n\n{0}'.format(configs['pipeline_dir']))
         email_notification(new_runs_dict)
 

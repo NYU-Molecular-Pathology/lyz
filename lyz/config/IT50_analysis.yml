@@ -15,3 +15,5 @@ reply_to_servername: 'nyumc.org'
 samplesheet_script: code/make_samplesheet.py
 
 run_script: 'code/run_samplesheet.py -darq'
+
+mail_script: code/mail_analysis_report.sh
