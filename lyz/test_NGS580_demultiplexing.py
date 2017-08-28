@@ -9,6 +9,7 @@ import os
 from NGS580_demultiplexing import NextSeqRun
 from util import log
 
+script_timestamp = log.timestamp()
 scriptdir = os.path.dirname(os.path.realpath(__file__))
 fixture_dir = os.path.join(scriptdir, "fixtures")
 sequencer_dir =  os.path.join(fixture_dir, 'NextSeq_runs')
@@ -27,6 +28,10 @@ configs['samplesheet_source_dir'] = samplesheet_source_dir
 configs['demultiplex_580_script'] = 'zzzzz'
 configs['samplesheet_processed_dir'] = samplesheet_processed_dir
 configs['seqtype'] = 'NGS580'
+
+configs['seqtype_file'] = 'seqtype.txt'
+configs['demultiplexing_started_file'] = 'demultiplexing_started.txt'
+configs['timestamp'] = script_timestamp
 
 
 class TestNextSeqRun(unittest.TestCase):

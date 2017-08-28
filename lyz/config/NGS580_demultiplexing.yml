@@ -21,3 +21,9 @@ reply_to_servername: 'nyumc.org'
 
 # the 'type' of sequencing, corresponds to label that will be detected by auto-analysis start module
 seqtype: NGS580
+
+# the name of the file to write the 'seqtype' to
+seqtype_file: seqtype.txt
+
+# the name of the file that will be used to denote that demultiplexing was started for the run
+demultiplexing_started_file: demultiplexing_started.txt

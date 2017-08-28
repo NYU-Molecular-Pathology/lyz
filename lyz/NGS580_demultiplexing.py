@@ -38,7 +38,7 @@ samplesheet_processed_dir = config.NGS580_demultiplexing['samplesheet_processed_
 email_recipients = config.NGS580_demultiplexing['email_recipients']
 reply_to_servername = config.NGS580_demultiplexing['reply_to_servername']
 seqtype = config.NGS580_demultiplexing['seqtype']
-
+demultiplexing_started_file = config.NGS580_demultiplexing['demultiplexing_started_file']
 
 
 # ~~~~ CREATE INTERNAL CONFIGS ~~~~~~ #
@@ -57,6 +57,9 @@ configs['log_file'] = log_file
 configs['main_filehandler'] = main_filehandler
 configs['script_timestamp'] = script_timestamp
 
+configs['demultiplexing_started_file'] = demultiplexing_started_file
+configs['seqtype_file'] = config.NGS580_demultiplexing['seqtype_file']
+configs['timestamp'] = file_timestamp
 
 
 # ~~~~ LOAD MORE PACKAGES ~~~~~~ #
@@ -120,7 +123,7 @@ class NextSeqRun(LoggedObject):
         self.run_dir = os.path.join(self.sequencer_dir, self.id)
 
         # file that will say what kind of sequencing it is, will be created, should say 'NGS580' on the first line
-        self.seqtype_file = os.path.join(self.run_dir, "seqtype.txt")
+        self.seqtype_file = os.path.join(self.run_dir, self.config['seqtype_file'])
 
         # 'BaseCalls' directory that holds .bcl files for the run
         self.basecalls_dir = os.path.join(self.run_dir, "Data", "Intensities", "BaseCalls")
@@ -155,6 +158,8 @@ class NextSeqRun(LoggedObject):
         self.seqtype = self.config['seqtype']
         self.RTAComplete_time = None
         self.is_valid = False
+        self.demultiplexing_started_file = os.path.join(self.run_dir, self.config['demultiplexing_started_file'])
+        self.timestamp = self.config['timestamp']
 
 
     def get_RTAComplete_time(self):
@@ -279,6 +284,7 @@ class NextSeqRun(LoggedObject):
     def submit_demultiplexing(self):
         '''
         Run the demultiplexing command for the run
+        mark whether it started in the run
         '''
         self.logger.debug('Demultiplexing command is:\n\n{}\n\n'.format(self.command))
         command = self.command
@@ -287,6 +293,7 @@ class NextSeqRun(LoggedObject):
         proc_stdout = process.communicate()[0]
         if process.returncode < 1:
             self.logger.info('Demultiplexing script started successfully:\n\n{0}\n\n'.format(proc_stdout.strip()))
+            self.mark_demultiplexing_started(demultiplexing_started_file = self.demultiplexing_started_file, timestamp = self.timestamp)
         else:
             self.logger.error('Demultiplexing script may not have started successfully!!\n\n{0}\n\n'.format(proc_stdout.strip()))
         self.move_samplesheet_to_processed(samplesheet = self.samplesheet, processed_dir = self.samplesheet_processed_dir)
@@ -339,6 +346,13 @@ mv {0} {1}
         with open(seqtype_file, 'w') as f:
             f.write(seqtype + '\n')
 
+    def mark_demultiplexing_started(self, demultiplexing_started_file, timestamp):
+        '''
+        Mark the sequencing run as having started demultiplexing
+        by writing a file in the run parent directory
+        '''
+        with open(demultiplexing_started_file, 'w') as f:
+            f.write(timestamp)
 
     def start(self):
         '''
@@ -347,6 +361,7 @@ mv {0} {1}
         self.is_valid = self.validate()
         if self.is_valid:
             self.set_new_samplesheet(input_samplesheet = self.samplesheet, output_samplesheet = self.samplesheet_output_file)
+            self.mark_run_seqtype(seqtype = self.seqtype, seqtype_file = self.seqtype_file)
             self.submit_demultiplexing()
         else:
             self.logger.error('Run will not be demultiplexed because some validations failed')
