@@ -305,7 +305,9 @@ class NextSeqRun(LoggedObject):
             x = SubprocessCmd(command = self.command)
             x.run()
             if x.process.returncode < 1:
-                self.logger.info('NGS580 script started successfully:\n\n{0}\n\n'.format(x.proc_stdout))
+                # self.logger.info('NGS580 script started successfully:\n\n{0}\n\n'.format(x.proc_stdout))
+                self.logger.info('NGS580 script started successfully')
+                self.logger.debug(x.proc_stdout)
             else:
                 self.logger.error('Demultiplexing script may not have started successfully!!\n\n{0}\n\n'.format(x.proc_stdout))
             self.email_results()
