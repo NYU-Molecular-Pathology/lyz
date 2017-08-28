@@ -8,13 +8,15 @@ Developed and tested with Python 2.7
 # ~~~~~ LOGGING ~~~~~~ #
 import os
 from util import log # the app's logging submodule
+from util import tools as t
 import logging
 
 # set logging globals
 script_timestamp = log.timestamp()
 scriptdir = os.path.dirname(os.path.realpath(__file__))
 scriptname = os.path.basename(__file__)
-logdir = os.path.join(scriptdir, 'logs')
+# logdir = os.path.join(scriptdir, 'logs')
+logdir = t.mkdirs(path = os.path.join(scriptdir, 'logs', script_timestamp), return_path = True)
 # set a timestamped log file for debug log
 logfile = os.path.join(logdir, '{0}.{1}.log'.format(scriptname, script_timestamp))
 
@@ -47,7 +49,7 @@ logger.debug("Path to the monitor's log file: {0}".format(log.logger_filepath(lo
 
 # ~~~~ PROGRAM LIBRARIES ~~~~~~ #
 import config
-from util import tools as t
+# from util import tools as t
 from util import find
 from util import qsub
 import NGS580_demultiplexing
