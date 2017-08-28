@@ -60,6 +60,8 @@ configs['code_dir'] = code_dir
 configs['email_recipients'] = email_recipients
 configs['reply_to_servername'] = reply_to_servername
 
+configs['samplesheet_script'] = config.IT50_analysis['samplesheet_script']
+configs['run_script'] = config.IT50_analysis['run_script']
 
 
 
@@ -115,7 +117,22 @@ def main(extra_handlers = None, download = True):
         logger.info('New runs samplesheet path: {0}'.format(new_runs_dict['samplesheet_file']))
 
     if new_runs_dict['runs']:
-        logger.info('New IonTorrent runs are available for analysis. Please start the analysis at the following server location:\n\n{0}'.format(configs['pipeline_dir']))
+        logger.info('New IonTorrent runs are available for analysis. Please start the analysis with the following commands:')
+        logger.info('''
+# change to pipeline dir
+cd {0}
+
+# make samplesheet with script:
+# {1}
+
+# run samplesheet
+{2} '<your samplesheet>'
+        '''.format(
+        configs['pipeline_dir'],
+        configs['samplesheet_script'],
+        configs['run_script']
+        )
+        # logger.info('New IonTorrent runs are available for analysis. Please start the analysis at the following server location:\n\n{0}'.format(configs['pipeline_dir']))
         email_notification(new_runs_dict)
 
 

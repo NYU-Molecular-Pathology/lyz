@@ -9,3 +9,9 @@ email_recipients: '#MolecularPathology@nyumc.org'
 
 # name of reply-to email server
 reply_to_servername: 'nyumc.org'
+
+# paths to items to fill in the email body messages
+# samplesheet script relative path
+samplesheet_script: code/make_samplesheet.py
+
+run_script: 'code/run_samplesheet.py -darq'
