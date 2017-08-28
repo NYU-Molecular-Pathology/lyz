@@ -52,6 +52,10 @@ configs['log_file'] = log_file
 configs['main_filehandler'] = main_filehandler
 configs['script_timestamp'] = script_timestamp
 
+configs['timestamp'] = script_timestamp
+configs['seqtype_file'] = config.NGS580_analysis['seqtype_file']
+configs['analysis_started_file'] = config.NGS580_analysis['analysis_started_file']
+
 
 
 # ~~~~ LOAD MORE PACKAGES ~~~~~~ #
@@ -139,6 +143,11 @@ class NextSeqRun(LoggedObject):
         self.RTAComplete_time = None
         self.seqtype = self.get_seqtype(seqtype_file = self.seqtype_file)
         self.is_valid = False
+
+        self.timestamp = self.config['timestamp']
+        self.seqtype_file = os.path.join(self.run_dir, self.config['seqtype_file'])
+        self.analysis_started_file = os.path.join(self.run_dir, self.config['analysis_started_file'])
+
 
     def get_seqtype(self, seqtype_file):
         '''
@@ -293,6 +302,14 @@ class NextSeqRun(LoggedObject):
         self.logger.debug('Email command is:\n\n{0}\n\n'.format(email_command))
         mutt.subprocess_cmd(command = email_command)
 
+    def mark_analysis_started(self, analysis_started_file, timestamp):
+        '''
+        Denote that the analysis for the sequencing run has started by writing a file to the
+        run parent dir
+        '''
+        with open(analysis_started_file, 'w') as f:
+            f.write(timestamp)
+
 
     def start(self):
         '''
@@ -308,6 +325,7 @@ class NextSeqRun(LoggedObject):
                 # self.logger.info('NGS580 script started successfully:\n\n{0}\n\n'.format(x.proc_stdout))
                 self.logger.info('NGS580 script started successfully')
                 self.logger.debug(x.proc_stdout)
+                self.mark_analysis_started(analysis_started_file = self.analysis_started_file, timestamp = self.timestamp)
             else:
                 self.logger.error('Demultiplexing script may not have started successfully!!\n\n{0}\n\n'.format(x.proc_stdout))
             self.email_results()

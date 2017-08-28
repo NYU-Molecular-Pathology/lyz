@@ -23,6 +23,11 @@ configs['scriptdir'] = scriptdir
 configs['logdir'] = os.path.join(scriptdir, 'logs')
 configs['script_timestamp'] = log.timestamp()
 
+configs['timestamp'] = log.timestamp()
+configs['seqtype_file'] = 'seqtype.txt'
+configs['seqtype'] = 'seqtype'
+configs['analysis_started_file'] = 'NGS580_analysis_started.txt'
+
 
 class TestNextSeqRun(unittest.TestCase):
     # def setUp(self):

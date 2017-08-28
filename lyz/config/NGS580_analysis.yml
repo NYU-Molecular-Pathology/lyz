@@ -7,9 +7,6 @@ sns_dir: /ifs/data/molecpathlab/scripts/sns
 # the exome targets file to be used for the variant calling
 wes_targets_bed: /ifs/data/molecpathlab/NGS580_WES/NGS580_targets.bed
 
-# the 'type' of sequencing, corresponds to label that should be set by the demultiplexing script
-seqtype: NGS580
-
 # location to save the results to
 analysis_output_dir: /ifs/data/molecpathlab/NGS580_WES
 
@@ -18,3 +15,12 @@ email_recipients: '#MolecularPathology@nyumc.org'
 
 # name of reply-to email server
 reply_to_servername: 'nyumc.org'
+
+# the 'type' of sequencing, corresponds to label that should be set by the demultiplexing script
+seqtype: NGS580
+
+# the name of the file to read the 'seqtype' from; should be the same as in the NGS580 demultiplexing config!
+seqtype_file: seqtype.txt
+
+# the name of the file that will be used to denote that analysis was started for the run
+analysis_started_file: NGS580_analysis_started.txt
