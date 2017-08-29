@@ -27,6 +27,8 @@ configs['timestamp'] = log.timestamp()
 configs['seqtype_file'] = 'seqtype.txt'
 configs['seqtype'] = 'seqtype'
 configs['analysis_started_file'] = 'NGS580_analysis_started.txt'
+configs['samplesheet_source_dir'] = '/ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/NGS580'
+configs['samples_pairs_sheet_pattern'] = '*-samples.pairs.csv'
 
 
 class TestNextSeqRun(unittest.TestCase):

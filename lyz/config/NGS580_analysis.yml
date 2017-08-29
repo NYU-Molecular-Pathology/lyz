@@ -24,3 +24,9 @@ seqtype_file: seqtype.txt
 
 # the name of the file that will be used to denote that analysis was started for the run
 analysis_started_file: NGS580_analysis_started.txt
+
+# filename pattern for the tumor-normal pairs samplesheet for a given run
+samples_pairs_sheet_pattern: '*-samples.pairs.csv'
+
+# location to look for Sample sheets
+samplesheet_source_dir: /ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/NGS580

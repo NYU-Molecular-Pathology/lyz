@@ -55,8 +55,8 @@ configs['script_timestamp'] = script_timestamp
 configs['timestamp'] = script_timestamp
 configs['seqtype_file'] = config.NGS580_analysis['seqtype_file']
 configs['analysis_started_file'] = config.NGS580_analysis['analysis_started_file']
-
-
+configs['samples_pairs_sheet_pattern'] = config.NGS580_analysis['samples_pairs_sheet_pattern']
+configs['samplesheet_source_dir'] = config.NGS580_analysis['samplesheet_source_dir']
 
 # ~~~~ LOAD MORE PACKAGES ~~~~~~ #
 import sys
@@ -90,6 +90,7 @@ class NextSeqRun(LoggedObject):
 
         self._init_log()
         self._init_attrs()
+        self._build_command()
 
     def _init_log(self):
         '''
@@ -131,7 +132,7 @@ class NextSeqRun(LoggedObject):
 
 
         self.start_NGS580_script = self.config['start_NGS580_script']
-        self.command = '{0} {1}'.format(self.start_NGS580_script, self.id)
+
 
         # ~~~~ EMAIL ATTRIBUTES ~~~~~~ #
         self.email_recipients = self.config['email_recipients']
@@ -147,7 +148,20 @@ class NextSeqRun(LoggedObject):
         self.timestamp = self.config['timestamp']
         self.seqtype_file = os.path.join(self.run_dir, self.config['seqtype_file'])
         self.analysis_started_file = os.path.join(self.run_dir, self.config['analysis_started_file'])
+        self.samplesheet_source_dir = self.config['samplesheet_source_dir']
 
+        # the tumor-normal samples pairs samplesheet file, if found
+        self.tumor_normal_pairs_samplesheet = self.search_for_samples_pairs_sheet(id = self.id, search_dir = self.samplesheet_source_dir, sheet_pattern = self.config['samples_pairs_sheet_pattern'])
+
+
+    def _build_command(self):
+        '''
+        Build the command to use for running the script on the given run
+        '''
+        if self.tumor_normal_pairs_samplesheet:
+            self.command = '{0} {1} {2}'.format(self.start_NGS580_script, self.id, self.tumor_normal_pairs_samplesheet[0])
+        else:
+            self.command = '{0} {1}'.format(self.start_NGS580_script, self.id)
 
     def get_seqtype(self, seqtype_file):
         '''
@@ -310,6 +324,22 @@ class NextSeqRun(LoggedObject):
         with open(analysis_started_file, 'w') as f:
             f.write(timestamp)
 
+    def search_for_samples_pairs_sheet(self, id, search_dir, sheet_pattern):
+        '''
+        Search for a tumor-normal samples pairs samplesheet to match the current sequencing run
+
+        from util import find
+        search_dir = '/ifs/data/molecpathlab/quicksilver/to_be_demultiplexed/NGS580'
+        id = '170824_NB501073_0020_AHHK37BGX3'
+        sheet_pattern = '*-samples.pairs.csv'
+        '''
+        sheet = []
+        patterns = [ str(id) + '*', sheet_pattern]
+        sheet = find.find(search_dir = search_dir, search_type = 'file', inclusion_patterns = patterns, level_limit = 0, match_mode = 'all')
+        self.logger.debug('Found tumor-normal samplesheet for run {0}: {1}'.format(id, sheet))
+        return(sheet)
+
+
 
     def start(self):
         '''
@@ -328,9 +358,12 @@ class NextSeqRun(LoggedObject):
                 self.mark_analysis_started(analysis_started_file = self.analysis_started_file, timestamp = self.timestamp)
             else:
                 self.logger.error('Demultiplexing script may not have started successfully!!\n\n{0}\n\n'.format(x.proc_stdout))
+            log.log_all_handler_filepaths(logger = self.logger)
             self.email_results()
         else:
+            log.log_all_handler_filepaths(logger = self.logger)
             self.logger.error('Run will not be demultiplexed because some validations failed')
+
 
 
 
@@ -348,6 +381,7 @@ def find_available_NextSeq_runs(sequencer_dir):
 
     return a list of NextSeqRun objects
     '''
+    # directory name patterns that correspond to test and debug dirs that should be excluded from the monitoring program
     excludes = [
     "to_be_demultiplexed",
     "automatic_demultiplexing_logs",
