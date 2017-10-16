@@ -356,10 +356,13 @@ class NextSeqRun(LoggedObject):
                 self.logger.info('NGS580 script started successfully')
                 self.logger.debug(x.proc_stdout)
                 self.mark_analysis_started(analysis_started_file = self.analysis_started_file, timestamp = self.timestamp)
+                log.log_all_handler_filepaths(logger = self.logger)
+                self.email_results()
             else:
                 self.logger.error('Demultiplexing script may not have started successfully!!\n\n{0}\n\n'.format(x.proc_stdout))
-            log.log_all_handler_filepaths(logger = self.logger)
-            self.email_results()
+                log.log_all_handler_filepaths(logger = self.logger)
+                self.email_results()
+
         else:
             log.log_all_handler_filepaths(logger = self.logger)
             self.logger.error('Run will not be demultiplexed because some validations failed')
