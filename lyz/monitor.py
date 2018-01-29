@@ -73,7 +73,7 @@ def main():
     '''
     logger.debug("Running the monitor")
     NGS580_demultiplexing.main(extra_handlers = [main_filehandler])
-    NGS580_analysis.main(extra_handlers = [main_filehandler])
+    # NGS580_analysis.main(extra_handlers = [main_filehandler])
     IT50_analysis.main(extra_handlers = [main_filehandler])
 
 
